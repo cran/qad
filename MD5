@@ -1,0 +1,17 @@
+8e39a072848175f4452033f45a9645f0 *DESCRIPTION
+18c64b11359ff218a37db6cbf9340d7a *NAMESPACE
+ead19f7e93d99a82e153302364e1f535 *R/S3_methods.R
+a3c2c9bfa4951de8dc4062cdff87139c *R/emp_c_copula.R
+54d196ed8c1d94e202e8ab9163fd8bd3 *R/plots.R
+edc6111b56abc1a3ca03b228f0306f08 *R/predict_qad.R
+c978d584d1217ec4a66b50636b0b40b9 *R/qad.R
+a5ab7f7f1c7f0ef05cc0557de4a1a073 *R/utility_functions.R
+417f63dc9e9af8a29ea2af067002e7ab *man/cci.Rd
+3aa4c71b6dd4b6bd4a7132650bd01545 *man/emp_c_copula.Rd
+e3c5582b0627290c0aa280bd38c28b07 *man/heatmap.qad.Rd
+7a495be563aa08010d2d0a3a1b35ffc4 *man/pairwise.qad.Rd
+2ac7f1f117e5dbc0802d7862aff70475 *man/plot.qad.Rd
+ee469dcf3cf699f36f6cde502d11fc80 *man/plot_density.Rd
+3946b3c9571d1b1024e2b26a6232217d *man/predict.qad.Rd
+e4b512551d0791cb68eb37a4e942f1a2 *man/qad.Rd
+1d36c39461c9f99800a1b43a21bb9db7 *man/summary.qad.Rd

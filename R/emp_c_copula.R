@@ -1,0 +1,182 @@
+#' The empirical checkerboard copula
+#'
+#' The function \code{emp_c_copula()} computes the mass distribution of the
+#' empirical (checkerboard) copula, given a bivariate sample. \code{emp_c_copula_eval()} evaluates the
+#' the empirical (checkerboard) copula at given points.
+#' If \code{smoothing} = FALSE, the empirical copula is computed (if there are ties in the sample an adjusted empirical copula is computed),
+#' otherwise the empirical checkerboard copula - a smoothed version of the empirical copula - is computed. For more information of the calculations, see details.
+#'
+#' @param X a data frame with two columns containing the observations of the sample. Each row contains
+#' one observation.
+#' @param smoothing a logial indicating whether the checkerboard aggregation is computed (default = TRUE).
+#' @param resolution an integer indicating the resolution of the checkerboard aggregation, i.e.
+#' the number of vertical/horizontal strips of the checkerboard copula.
+#'
+#' @return \code{emp_c_copula()} returns a matrix with the mass distribution of the empirical
+#' (checkerboard) copula.
+#'
+#' @details If the observations come from a distribution with continuous margins,
+#' i.e. there are no ties in the sample, the function \code{emp_c_copula()} gives the same result
+#' as the function \code{C.n()} in the \code{copula} package.
+#' If there are ties in the sample, the empirical copula is adjusted and calculated in the following way: \cr
+#' Let (u_i,v_i) := (F_n(x_i),G_n(y_i)) be the pseudo-observations for i in \{1,\ldots,n\} and (u_1',v_1'),\ldots, (u_m',v_m') the distinct pairs of pseudo-observations with m leq n. Moreover set S_1:=\{u_1, \ldots, u_{m_1}\} cup \{0,1\} and S_2:=\{v_1,\ldots, v_{m_2}\} cup \{0,1\} and define the quantities t_i,r_i and s_i for i=1,\ldots, m by
+#' \deqn{t_i := sum_{j=1}^n 1_{(u_i',v_i')}(u_j,v_j)}
+#' \deqn{r_i := sum_{j=1}^n 1_{u_i}(u_j)}
+#' \deqn{s_i := sum_{j=1}^n 1_{v_i}(v_j)}
+#' where 1 defines the indicator function.
+#' Define the empirical subcopula A'_n: S_1 x S_2 to \{0,1/n, \ldots, (n-1)/n,1\} by
+#' \deqn{A'_n(s_1,s_2)= 1/n  sum_{i=1}^m t_i * 1_{[0,s_1] x [0,s_2]} (u_i', v_i')=1/n sum_{i=1}^n 1_{[0,s_1] x [0,s_2]} (u_i, v_i)}
+#' for all s_1 in S_1 and s_2 in S_2. \cr
+#' We extend the subcopula A'_n to a copula by defining the transformations w_i:[0,1]^2 to [u_i'-r_i/n,u_i'] x [v_i'-s_i/n,v_i'] by
+#' \deqn{w_i(x,y)=(u_i'-r_i/n+r_i*x/n, v_i'-s_i/n + s_iy/n)}
+#' and set the measure of the empirical copula mu_{A_n}^B := 1/n sum_{i=1}^m t_i mu_B^{w_i}, where B denotes the product copula.
+#'
+#' The checkerboard aggregation is computed as usual (see references).
+#'
+#' @note The calculation of the empirical copula with a high sample size (and resolution rate) can take time.
+#'
+#' @references
+#' Deheuvels, P. (1979). La fonction de dépendance empirique et ses propriétés: un test non paramétrique d'indépendance, Acad. Roy. Belg. Bull. Cl. Sci., 5th Ser. 65, 274–292.
+#'
+#' Li, X., Mikusinski, P. and Taylor, M.D. (1998). Strong approximation of copulas, Journal of Mathematical Analysis and Applications, 255, 608-623.
+#'
+#' Genest, C., Neshlehova J.G. and Remillard, B. (2014). On the empirical multilinear copula process for count data. Bernoulli, 20 (3), 1344-1371.
+#'
+#' @examples
+#' ## Generate data X from the product copula and compute the empirical copula
+#' n <- 1000
+#' x <- runif(n, 0, 1)
+#' y <- runif(n, 0, 1)
+#' X <- data.frame(x,y)
+#' #(Not Run)
+#' # mass_product <- emp_c_copula(X, smoothing = TRUE, resolution = 50)
+#' # eval_points <- data.frame(x = c(0.3,0.6), y = c(0.5,0.9))
+#' # eval_points$emp_cop <- emp_c_copula_eval(X, eval_points, smoothing = TRUE, resolution = 50)
+#' # eval_points$cop <- eval_points$x * eval_points$y
+#'
+#' ## Compute empirical checkerboard copula of a sample with ties and plot density
+#' n <- 1000
+#' x <- sample(runif(n, -1, 1), n, replace=TRUE)
+#' y <- x^2 + rnorm(n, 0, 1)
+#' X <- data.frame(x,y)
+#' #(Not Run)
+#' # mass <- emp_c_copula(X, smoothing = TRUE, resolution = 10)
+#' # plot_density(mass)
+
+emp_c_copula <- function(X, smoothing = TRUE, resolution) {
+  x <- as.numeric(data.frame(X[, 1:2])[, 1])
+  y <- as.numeric(data.frame(X[, 1:2])[, 2])
+
+  X <- na.omit(X[,1:2])
+
+  if(smoothing == FALSE){
+    N <- NROW(X)
+  }else{
+    N <- floor(resolution)
+  }
+
+  #Determine the grid wrt the resolution
+  grid <- seq(0, 1, length.out = N + 1)
+  grid <- data.table(expand.grid(grid,grid))
+  names(grid) <- c('x','y')
+
+  #if there are no ties we can use the function C.n from the copula package
+  if (length(x) == length(unique(x)) &
+      length(y) == length(unique(y))) {
+    z <- C.n(as.matrix(grid), as.data.frame(X), smoothing = 'checkerboard')
+    M <- matrix(z, nrow = N + 1, ncol = N + 1)
+    mass <-
+      M[-1,-1] + M[-(N + 1),-(N + 1)] - M[-1,-(N + 1)] - M[-(N + 1),-1]
+  } else{
+    #Calculate the ranks and the frequency of each rank of the sample
+    rank_x <- data.table(rank_x = rank(x, ties.method = 'max'))
+    tab_x <- rank_x[, .(freq_rank_x = .N), by = rank_x]
+    rank_y <- data.table(rank_y = rank(y, ties.method = 'max'))
+    tab_y <- rank_y[, .(freq_rank_y = .N), by = rank_y]
+
+    #Create data.table with rank informations
+    rank_df <- data.table(rank_x, rank_y)
+    rank_df <- rank_df[, .(freq = .N), by = .(rank_x, rank_y)]
+    rank_df <- merge(rank_df, tab_x, by = 'rank_x', all.x = TRUE)
+    rank_df <- merge(rank_df, tab_y, by = 'rank_y', all.x = TRUE)
+    rank_df <-
+      rank_df[, c('rank_x', 'rank_y', 'freq', 'freq_rank_x', 'freq_rank_y')]
+
+    #Calculate the mass and the rectangles with min and max
+    n <- length(x)
+    rank_df$xmax <- rank_df$rank_x / n
+    rank_df$xmin <- rank_df$xmax - rank_df$freq_rank_x / n
+    rank_df$ymax <- rank_df$rank_y / n
+    rank_df$ymin <- rank_df$ymax - rank_df$freq_rank_y / n
+    rank_df$mass <- (1 / n) * rank_df$freq
+    #setkey(rank_df, xmin, ymin)   #This line does not go through check --> note: global variable
+
+    #mass function for the checkerboard copula
+    mass_function <- function(u, v, rank_df, n) {
+      #A <- rank_df[xmin <= u & ymin <= v,]   #This line does not go through check --> note: global variable
+      A <- rank_df[rank_df$xmin <= u & rank_df$ymin <= v, ]
+      output <- sum(A$mass * (pmin(A$xmax,u)-A$xmin)/(A$xmax-A$xmin)*(pmin(A$ymax,v)-A$ymin)/(A$ymax-A$ymin))
+      return(output)
+    }
+
+    z <-
+      mapply(
+        mass_function,
+        u = grid$x,
+        v = grid$y,
+        MoreArgs = list(rank_df = rank_df, n = n)
+      )
+
+    M <- matrix(z, nrow = N+1, ncol = N+1)
+    mass <- M[-1, -1] + M[-(N+1), -(N+1)] - M[-1, -(N+1)] - M[-(N+1), -1]
+  }
+  return(round(mass,14))
+}
+
+#' @param u a data.frame with two columns containing the evaluation points. Each row consists of a x and y value.
+#' @rdname emp_c_copula
+#' @return \code{emp_c_copula_eval()} returns a vector of evaluations of the empirical
+#' (checkerboard) copula.
+
+emp_c_copula_eval <- function(X, u, smoothing = TRUE, resolution){
+  if(class(u) == 'data.frame'){
+    mass <- emp_c_copula(X, smoothing = smoothing, resolution)
+    N <- NROW(mass)
+    u <- data.frame(u)
+    #Set grid for evaluation
+    grid <- seq(0,1,length.out = N+1)
+    mass_new <- matrix(0, nrow= N+1, ncol = N+1)
+    mass_new[2 : (N+1), 2 : (N+1)] <- mass
+
+    mass <- t(apply(apply(mass_new,2,cumsum),1,cumsum))
+
+    bilinear_interpolation <- function(grid, z, x0, y0){
+      #Grid definitions
+      x <- grid
+      y <- grid
+      n <- length(x)
+
+      #linear approximations to compute distances to node before
+      lx <- approx(x, 1:n, x0)$y
+      ly <- approx(y, 1:n, y0)$y
+      lx1 <- floor(lx)
+      ly1 <- floor(ly)
+      d_x <- lx - lx1
+      d_y <- ly - ly1
+
+      d_x[lx1 == n] <- 1
+      d_y[ly1 == n] <- 1
+      lx1[lx1 == n] <- n - 1
+      ly1[ly1 == n] <- n - 1
+      output <- z[cbind(lx1, ly1)] * (1 - d_x) * (1 - d_y) +
+        z[cbind(lx1 + 1, ly1)] * d_x * (1 - d_y) +
+        z[cbind(lx1, ly1 + 1)] * (1 - d_x) * d_y +
+        z[cbind(lx1 + 1, ly1 + 1)] * d_x * d_y
+      return(output)
+    }
+    return(bilinear_interpolation(grid, mass, u[,1], u[,2]))
+  }else{
+    warning('u must be a data.frame')
+  }
+
+}
