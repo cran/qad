@@ -11,6 +11,8 @@
 #' @param permutation a logical indicating whether a permutated p-value is computed.
 #' @param nperm an integer indicating the number of permutation runs.
 #' @param DoParallel a logical value indicating whether the permutation test is computed parallel.
+#' @param registerC function to register the parallel backend. It is recommended to use registerDoParallel() of the doParallel package (default). Another option for a linux based system is to install the
+#' doMC package and use registerDoMC
 #' @param ncores an integer indicating the number of cores used for parallel calculation. Default = NULL uses max(cores)-1
 #' @param print a logical indicating whether the result is printed into the console.
 #' @param ... Further arguments passed to 'qad' will be ignored
@@ -65,7 +67,7 @@ qad <- function(x, ...){
 
 #' @rdname qad
 #' @method qad data.frame
-qad.data.frame <- function(x, resolution = NULL, permutation=FALSE, nperm=100, DoParallel=TRUE, ncores=NULL, print=TRUE,...){
+qad.data.frame <- function(x, resolution = NULL, permutation=FALSE, nperm=100, DoParallel=TRUE, registerC = registerDoParallel, ncores=NULL, print=TRUE,...){
   X <- x
   x <- as.numeric(data.frame(na.omit(X[,1:2]))[,1])
   y <- as.numeric(data.frame(na.omit(X[,1:2]))[,2])
@@ -112,7 +114,9 @@ qad.data.frame <- function(x, resolution = NULL, permutation=FALSE, nperm=100, D
         cores <- ncores
       }
 
-      registerDoParallel(cores = cores)
+      #Register parallel backend
+      registerC(cores)
+
 
       xAll <- c(x,y)
       permutation_loop <- foreach(i=1:nperm, .combine='rbind', .packages = c('data.table','copula'), .export=c('emp_c_copula', '.markov_kernel','.zeta1_checkerboard_strip','.zeta1')) %dopar% {
@@ -133,7 +137,11 @@ qad.data.frame <- function(x, resolution = NULL, permutation=FALSE, nperm=100, D
 
         return(c(zeta1.perm,zeta1.t.perm, asym.perm, mean_dep.perm))
       }
-      stopImplicitCluster()
+
+      if(.Platform$OS.type == "windows"){
+        stopImplicitCluster()
+      }
+
       zeta1.perm <- permutation_loop[,1]
       zeta1.t.perm <- permutation_loop[,2]
       asym.perm <- permutation_loop[,3]
@@ -181,7 +189,7 @@ qad.data.frame <- function(x, resolution = NULL, permutation=FALSE, nperm=100, D
 
   if(print){
     cat("\n")
-    cat("quantification of asymmetric dependencies:", "\n")
+    cat("quantification of asymmetric dependence:", "\n")
     cat("\nData: x1 :=", paste(colnames(X)[1]))
     cat("\n      x2 :=", paste(colnames(X)[2]))
     cat("\n")
@@ -214,10 +222,10 @@ qad.data.frame <- function(x, resolution = NULL, permutation=FALSE, nperm=100, D
 
 #' @rdname qad
 #' @method qad numeric
-qad.numeric <- function(x, y , resolution = NULL, permutation=FALSE, nperm=100, DoParallel=TRUE, ncores=NULL, print=TRUE,...){
+qad.numeric <- function(x, y , resolution = NULL, permutation=FALSE, nperm=100, DoParallel=TRUE, registerC = registerDoParallel, ncores=NULL, print=TRUE,...){
   X <- data.frame(x,y)
   names(X) <- c(deparse(substitute(x)),deparse(substitute(y)))
-  return(qad.data.frame(X, resolution = resolution, permutation = permutation, nperm = nperm, DoParallel = DoParallel, ncores = ncores, print = print))
+  return(qad.data.frame(X, resolution = resolution, permutation = permutation, nperm = nperm, DoParallel = DoParallel, registerC = registerC, ncores = ncores, print = print))
 }
 
 
@@ -233,6 +241,8 @@ qad.numeric <- function(x, y , resolution = NULL, permutation=FALSE, nperm=100, 
 #' @param permutation a logical indicating whether a permutated p-value is computed.
 #' @param nperm an integer indicating the number of permutation runs.
 #' @param DoParallel a logical value indicating whether the permutation test is computed parallelized.
+#' @param registerC function to register the parallel backend. It is recommended to use registerDoParallel() of the doParallel package (default). Other option is for example on a linux based system to install the
+#' doMC package and use registerDoMC
 #' @param ncores an integer indicating the number of cores used for parallelization. Default (NULL) uses the maximum number of cores minus 1.
 #'
 #' @return a list, containing 6 data.frames with the dependence measures and corresponding p.values.
@@ -249,7 +259,7 @@ qad.numeric <- function(x, y , resolution = NULL, permutation=FALSE, nperm=100, 
 #' #model <- pairwise.qad(sample_df, permutation = TRUE, nperm = 20, DoParallel = TRUE)
 #' #heatmap.qad(model, select = "dependence", fontsize = 20, significance = TRUE)
 
-pairwise.qad <- function(data_df, resolution = NULL, permutation = FALSE, nperm = 10, DoParallel = TRUE, ncores = NULL){
+pairwise.qad <- function(data_df, resolution = NULL, permutation = FALSE, nperm = 10, DoParallel = TRUE, registerC = registerDoParallel, ncores = NULL){
   data_df <- data.frame(data_df)
   var_names <- colnames(data_df)
   n_var <- length(var_names)
@@ -266,7 +276,8 @@ pairwise.qad <- function(data_df, resolution = NULL, permutation = FALSE, nperm 
       #Calculate the qad models
       qad_model <- qad(data_df[,c(i,j)], resolution = resolution,
                        permutation = permutation, nperm = nperm,
-                       DoParallel = DoParallel, ncores = ncores, print = FALSE)
+                       DoParallel = DoParallel, registerC = registerC,
+                       ncores = ncores, print = FALSE)
       #q values
       qM[i,j] <- coef(qad_model, select = c('q(x1,x2)'))
       qM[j,i] <- coef(qad_model, select = c('q(x2,x1)'))

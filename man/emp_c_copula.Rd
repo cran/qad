@@ -39,7 +39,7 @@ If the observations come from a distribution with continuous margins,
 i.e. there are no ties in the sample, the function \code{emp_c_copula()} gives the same result
 as the function \code{C.n()} in the \code{copula} package.
 If there are ties in the sample, the empirical copula is adjusted and calculated in the following way: \cr
-Let (u_i,v_i) := (F_n(x_i),G_n(y_i)) be the pseudo-observations for i in \{1,\ldots,n\} and (u_1',v_1'),\ldots, (u_m',v_m') the distinct pairs of pseudo-observations with m leq n. Moreover set S_1:=\{u_1, \ldots, u_{m_1}\} cup \{0,1\} and S_2:=\{v_1,\ldots, v_{m_2}\} cup \{0,1\} and define the quantities t_i,r_i and s_i for i=1,\ldots, m by
+Let (u_i,v_i) := (F_n(x_i),G_n(y_i)) be the pseudo-observations for i in \{1,\ldots,n\} and (u_1',v_1'),\ldots, (u_m',v_m') the distinct pairs of pseudo-observations with m leq n. Moreover set S_1:=\{0, u_1, \ldots, u_{m_1}\} and S_2:=\{0, v_1,\ldots, v_{m_2}\} and define the quantities t_i,r_i and s_i for i=1,\ldots, m by
 \deqn{t_i := sum_{j=1}^n 1_{(u_i',v_i')}(u_j,v_j)}
 \deqn{r_i := sum_{j=1}^n 1_{u_i}(u_j)}
 \deqn{s_i := sum_{j=1}^n 1_{v_i}(v_j)}
@@ -78,7 +78,7 @@ X <- data.frame(x,y)
 # plot_density(mass)
 }
 \references{
-Deheuvels, P. (1979). La fonction de dépendance empirique et ses propriétés: un test non paramétrique d'indépendance, Acad. Roy. Belg. Bull. Cl. Sci., 5th Ser. 65, 274–292.
+Deheuvels, P. (1979). La fonction de dependance empirique et ses proprietas: un test non parametrique d'independance, Acad. Roy. Belg. Bull. Cl. Sci., 5th Ser. 65, 274-292.
 
 Li, X., Mikusinski, P. and Taylor, M.D. (1998). Strong approximation of copulas, Journal of Mathematical Analysis and Applications, 255, 608-623.
 

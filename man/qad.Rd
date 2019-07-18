@@ -9,10 +9,12 @@
 qad(x, ...)
 
 \method{qad}{data.frame}(x, resolution = NULL, permutation = FALSE,
-  nperm = 100, DoParallel = TRUE, ncores = NULL, print = TRUE, ...)
+  nperm = 100, DoParallel = TRUE, registerC = registerDoParallel,
+  ncores = NULL, print = TRUE, ...)
 
 \method{qad}{numeric}(x, y, resolution = NULL, permutation = FALSE,
-  nperm = 100, DoParallel = TRUE, ncores = NULL, print = TRUE, ...)
+  nperm = 100, DoParallel = TRUE, registerC = registerDoParallel,
+  ncores = NULL, print = TRUE, ...)
 }
 \arguments{
 \item{x}{a data.frame containing two columns with the observations of the bivariate sample or a (non-empty) numeric vector of data values}
@@ -27,6 +29,9 @@ Default = NULL uses the optimal resolution.}
 \item{nperm}{an integer indicating the number of permutation runs.}
 
 \item{DoParallel}{a logical value indicating whether the permutation test is computed parallel.}
+
+\item{registerC}{function to register the parallel backend. It is recommended to use registerDoParallel() of the doParallel package (default). Another option for a linux based system is to install the
+doMC package and use registerDoMC}
 
 \item{ncores}{an integer indicating the number of cores used for parallel calculation. Default = NULL uses max(cores)-1}
 

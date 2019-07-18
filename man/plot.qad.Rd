@@ -6,7 +6,8 @@
 \usage{
 \method{plot}{qad}(x, addSample = FALSE, copula = FALSE,
   density = FALSE, margins = FALSE, point.size = 0.8,
-  panel.grid = TRUE, ...)
+  panel.grid = TRUE, color = "plasma", rb_values = c(10, 0.315,
+  0.15), ...)
 }
 \arguments{
 \item{x}{an object of class qad.}
@@ -24,6 +25,10 @@ Only works in the copula setting, i.e. if copula = TRUE.}
 \item{point.size}{a numeric specifying the point size of the sample (relevant if addSample = TRUE).}
 
 \item{panel.grid}{a logical indicating whether the panel grid is plotted. (default = TRUE)}
+
+\item{color}{a color palette of the viridis package or rainbow. options are c("viridis", "magma", "inferno", "plasma", "cividis", "rainbow")}
+
+\item{rb_values}{a vector of size 3 with number of values, start value and end value in the rainbow colors space.}
 
 \item{...}{some methods for this generic require additional arguments.  None are used in this method.}
 }

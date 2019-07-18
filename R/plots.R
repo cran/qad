@@ -12,6 +12,8 @@
 #' @param margins a logical indicating whether the margin distribution is added in form of a rug plot.
 #' @param point.size a numeric specifying the point size of the sample (relevant if addSample = TRUE).
 #' @param panel.grid a logical indicating whether the panel grid is plotted. (default = TRUE)
+#' @param color a color palette of the viridis package or rainbow. options are c("viridis", "magma", "inferno", "plasma", "cividis", "rainbow")
+#' @param rb_values a vector of size 3 with number of values, start value and end value in the rainbow colors space.
 #' @param ... some methods for this generic require additional arguments.  None are used in this method.
 #'
 #' @note The conditional probabilities are constant at squares in the copula setting. If the squares are retransformed in the data setting, the resulting objects are rectangles.
@@ -40,7 +42,8 @@
 #'
 #' @method plot qad
 
-plot.qad <- function(x, addSample = FALSE, copula = FALSE, density = FALSE, margins = FALSE, point.size = 0.8, panel.grid = TRUE, ...){
+plot.qad <- function(x, addSample = FALSE, copula = FALSE, density = FALSE, margins = FALSE, point.size = 0.8, panel.grid = TRUE,
+                     color = "plasma", rb_values = c(10, 0.315, 0.15), ...){
   qad_output <- x
   if(class(qad_output)=='qad'){
 #Copula setting
@@ -65,9 +68,19 @@ plot.qad <- function(x, addSample = FALSE, copula = FALSE, density = FALSE, marg
       p <- ggplot()
       p <- p + geom_raster(data=data, aes_(x=~x1/n-1/n/2,y=~x2/n-1/n/2 , fill=~value), alpha=0.95, na.rm = TRUE)
       if(density){
-        p <- p + scale_fill_gradient(low="#cde7f0",high='#006699',guide = guide_colorbar(title='Density'), na.value=NA)
+        if(color == "rainbow"){
+          p <- p + scale_fill_gradientn(colours = rainbow(rb_values[1], start = rb_values[2], end = rb_values[3]),
+                                        guide = guide_colorbar(title='Density'), na.value=NA)
+        }else{
+          p <- p + scale_fill_viridis_c(na.value = NA, space = "Lab", name = 'Density', option = color, direction = -1)
+        }
       }else{
-        p <- p + scale_fill_gradient(low="#cde7f0",high='#006699',guide = guide_colorbar(title='Conditional probabilities'), na.value=NA)
+        if(color == "rainbow"){
+          p <- p + scale_fill_gradientn(colours = rainbow(rb_values[1], start = rb_values[2], end = rb_values[3]),
+                                        guide = guide_colorbar(title='Cond. prob.'), na.value=NA)
+        }else{
+          p <- p + scale_fill_viridis_c(na.value = NA, space = "Lab", name = 'Cond. prob.', option = color, direction = -1)
+        }
       }
       p <- p + theme_bw() + xlab('x1') + ylab('x2') + ggtitle('Empirical checkerboard copula')
       if(addSample){
@@ -113,7 +126,12 @@ plot.qad <- function(x, addSample = FALSE, copula = FALSE, density = FALSE, marg
       if(margins){
         p <- p + geom_rug(data = qad_output$data, aes_(x=~x1, y=~x2))
       }
-      p <- p + scale_fill_gradient(low="#cde7f0",high='#006699',guide = guide_colorbar(title='Conditional probabilites'), na.value=NA)
+      if(color == "rainbow"){
+        p <- p + scale_fill_gradientn(colours = rainbow(rb_values[1], start = rb_values[2], end = rb_values[3]),
+                                      guide = guide_colorbar(title='Cond. prob.'), na.value=NA)
+      }else{
+        p <- p + scale_fill_viridis_c(na.value = NA, space = "Lab", name = 'Cond. prob.', option = color, direction = -1)
+      }
       if(addSample){
         p <- p + geom_point(data=qad_output$data, aes_(x=~x1,y=~x2), size=point.size)
       }
@@ -138,6 +156,8 @@ plot.qad <- function(x, addSample = FALSE, copula = FALSE, density = FALSE, marg
 #'
 #' @param mass_matrix a squared matrix containing the mass distribution, e.g. output of the function \code{emp_c_copula()}.
 #' @param density a logical (TRUE = default) whether the density or the mass is plotted.
+#' @param color Select the color palette. Options are c("plasma" (default), "viridis", "inferno", "magma", "cividis").
+#' @param rb_values a vector of size 3 with number of values, start value and end value in the rainbow colors space.
 #'
 #' @return a density plot (or mass distribution)
 #' @examples
@@ -151,7 +171,7 @@ plot.qad <- function(x, addSample = FALSE, copula = FALSE, density = FALSE, marg
 #' plot_density(mass, density=TRUE)
 #' plot_density(mass, density=FALSE)
 
-plot_density <- function(mass_matrix, density=TRUE){
+plot_density <- function(mass_matrix, density=TRUE, color = "plasma", rb_values = c(10, 0.315, 0.15)){
   #input: matrix with mass distribution
   if(density){
     mass_matrix <- mass_matrix*NROW(mass_matrix)*NCOL(mass_matrix)
@@ -163,9 +183,20 @@ plot_density <- function(mass_matrix, density=TRUE){
   p <- ggplot(data=data, aes_(x=~x1/n-1/n/2,y=~x2/n-1/n/2))
   p <- p + geom_raster(aes_(fill=~value), alpha=0.95, na.rm = TRUE)
   if(density){
-    p <- p + scale_fill_gradient(low="#cde7f0",high='#006699',guide = guide_colorbar(title='Density'), na.value=NA)
+    if(color == "rainbow"){
+      p <- p + scale_fill_gradientn(colours = rainbow(rb_values[1], start = rb_values[2], end = rb_values[3]),
+                                    guide = guide_colorbar(title='Density'), na.value=NA)
+    }else{
+      p <- p + scale_fill_viridis_c(guide = guide_colorbar(title = "Density"), na.value = NA, option = color, direction = -1)
+    }
+    #p <- p + scale_fill_gradient(low="#cde7f0",high='#006699',guide = guide_colorbar(title='Density'), na.value=NA)
   }else{
-    p <- p + scale_fill_gradient(low="#cde7f0",high='#006699',guide = guide_colorbar(title='Mass'), na.value=NA)
+    if(color == "rainbow"){
+      p <- p + scale_fill_gradientn(colours = rainbow(rb_values[1], start = rb_values[2], end = rb_values[3]),
+                                    guide = guide_colorbar(title='Mass'), na.value=NA)
+    }else{
+      p <- p + scale_fill_viridis_c(guide = guide_colorbar(title = "Mass"), na.value = NA, option = color, direction = -1)
+    }
   }
   p <- p + theme_bw() + xlab('x1') + ylab('x2') + ggtitle('Empirical checkerboard copula')
   p
@@ -184,6 +215,8 @@ plot_density <- function(mass_matrix, density=TRUE){
 #' @param significance a logical indicating whether significant values - with respect to the permutated p.values - are marked with a star.
 #' @param sign.level numeric value indicating the significance level.
 #' @param scale character indicating whether the heatmap uses a relative or absolute scale. Options are "rel" or "abs" (default).
+#' @param color Select the color palette. Options are c("plasma" (default), "viridis", "inferno", "magma", "cividis").
+#' @param rb_values a vector of size 3 with number of values, start value and end value in the rainbow colors space.
 #'
 #' @details If the output of \code{pairwise.qad}() contains p-values, significant values can be highlighted by stars by setting significance=TRUE.
 #'
@@ -197,102 +230,88 @@ plot_density <- function(mass_matrix, density=TRUE){
 #'
 #' #qad (Not Run)
 #' #model <- pairwise.qad(sample_df, permutation = TRUE, nperm = 10, DoParallel = TRUE)
-#' #heatmap.qad(model, select = "dependence", fontsize = 10, significance = TRUE)
+#' #heatmap.qad(model, select = "dependence", fontsize = 6, significance = TRUE)
 
-heatmap.qad <- function(pw_qad, select = c('dependence','mean.dependence','asymmetry'), fontsize = 4, significance = TRUE, sign.level = 0.05, scale = "abs"){
-  #Dependence measures
+heatmap.qad <- function(pw_qad, select = c('dependence','mean.dependence','asymmetry'), fontsize = 4, significance = FALSE,
+                        sign.level = 0.05, scale = "abs", color = "plasma", rb_values = c(10, 0.315, 0.15)){
+  #Select dependence measure
   if(select == 'dependence'){
     melt_df <- melt(as.matrix(pw_qad$q))
     melt_df$value <- round(melt_df$value, 2)
-    p <- ggplot(data = melt_df, aes_(x = ~Var2, y = ~Var1, fill = ~value))
-    p <- p + geom_tile(color = 'white')
-    if(scale == "rel"){
-      p <- p + scale_fill_gradient2(low = '#006699', high = '#006699', mid = "white",
-                                    midpoint = 0, space = "Lab",
-                                    name = "Dependence: qad(x,y)", na.value = "lightgrey")
-    }else{
-      p <- p + scale_fill_gradient2(low = '#006699', high = '#006699', mid = "white",
-                                    midpoint = 0, limit = c(0, 1), space = "Lab",
-                                    name = "Dependence: qad(x,y)", na.value = "lightgrey")
-    }
-    p <- p + theme_bw() + coord_fixed() + xlab('Variable 2') + ylab("Variable 1")
-    p <- p + scale_x_discrete(position = 'top')
-    p <- p + scale_y_discrete(limits = rev(unique(melt_df$Var1)))
     if(significance & any(!is.na(pw_qad$q_p.values))){
       melt_df_sign <- melt(as.matrix(pw_qad$q_p.values))
       melt_df_sign$value <- ifelse(melt_df_sign$value < sign.level & !is.na(melt_df_sign$value), '*','')
       melt_df$sign <- melt_df_sign$value
       melt_df$paste_value <- ifelse(is.na(melt_df$value), NA, paste(melt_df$value,melt_df$sign, sep=''))
-      p <- p + geom_text(data = melt_df, aes_(x = ~Var2, y = ~Var1, label = ~paste_value), color = "black", size = fontsize, na.rm=TRUE)
-    }else{
-      p <- p + geom_text(aes_(x = ~Var2, y = ~Var1, label = ~value), color = "black", size = fontsize, na.rm = TRUE)
     }
-    p
-
-
-
+    limit_plot <- c(0,1)
+    legend_title <- "Dependence: \nq:=q(x,y)"
+    #color_pal <- c("white",  "#365C8DFF", "#1FA187FF", "#FDE725FF")
+    if(color == "rainbow"){
+      color_pal <- rainbow(rb_values[1], start = rb_values[2], end = rb_values[3])
+    }else{
+      color_pal <- viridis(5, option = color, direction = -1)
+    }
   }else if(select == 'mean.dependence'){
     melt_df <- melt(as.matrix(pw_qad$mean.dependence))
     melt_df$value <- round(melt_df$value, 2)
-    p <- ggplot(data = melt_df, aes_(x = ~Var2, y = ~Var1, fill = ~value))
-    p <- p + geom_tile(color = 'white')
-    if(scale == "rel"){
-      p <- p + scale_fill_gradient2(low = '#006699', high = '#006699', mid = "white",
-                                    midpoint = 0, space = "Lab",
-                                    name = "Mean dependence", na.value = "lightgrey")
-    }else{
-      p <- p + scale_fill_gradient2(low = '#006699', high = '#006699', mid = "white",
-                                    midpoint = 0, limit = c(0, 1), space = "Lab",
-                                    name = "Mean dependence", na.value = "lightgrey")
-    }
-    p <- p + theme_bw() + coord_fixed() + xlab('Variable 2') + ylab("Variable 1")
-    p <- p + scale_x_discrete(position = 'top')
-    p <- p + scale_y_discrete(limits = rev(unique(melt_df$Var1)))
     if(significance & any(!is.na(pw_qad$mean.dependence_p.values))){
       melt_df_sign <- melt(as.matrix(pw_qad$mean.dependence_p.values))
       melt_df_sign$value <- ifelse(melt_df_sign$value < sign.level & !is.na(melt_df_sign$value), '*','')
       melt_df$sign <- melt_df_sign$value
       melt_df$paste_value <- ifelse(is.na(melt_df$value), NA, paste(melt_df$value,melt_df$sign, sep=''))
-      p <- p + geom_text(data = melt_df, aes_(x = ~Var2, y = ~Var1, label = ~paste_value), color = "black", size = fontsize, na.rm=TRUE)
-    }else{
-      p <- p + geom_text(aes_(x = ~Var2, y = ~Var1, label = ~value), color = "black", size = fontsize, na.rm=TRUE)
     }
-    p
-
-
-
+    limit_plot <- c(0,1)
+    legend_title <- "Mean dependence: \nmd:=(q(x,y)+q(y,x))/2"
+    #color_pal <- c("white",  "#365C8DFF", "#1FA187FF", "#FDE725FF")
+    if(color == "rainbow"){
+      color_pal <- rainbow(rb_values[1], start = rb_values[2], end = rb_values[3])
+    }else{
+      color_pal <- viridis(5, option = color, direction = -1)
+    }
   }else if(select == 'asymmetry'){
     melt_df <- melt(as.matrix(pw_qad$asymmetry))
     melt_df$value <- round(melt_df$value, 2)
-    p <- ggplot(data = melt_df, aes_(x = ~Var2, y = ~Var1, fill = ~value))
-    p <- p + geom_tile(color = 'white')
-    if(scale == "rel"){
-      p <- p + scale_fill_gradient2(low = '#006699', high = '#006699', mid = "white",
-                                    midpoint = 0, space = "Lab",
-                                    name = "Asymmetry", na.value = "lightgrey")
-    }else{
-      p <- p + scale_fill_gradient2(low = '#006699', high = '#006699', mid = "white",
-                                    midpoint = 0, limit = c(-1, 1), space = "Lab",
-                                    name = "Asymmetry", na.value = "lightgrey")
-    }
-    p <- p + theme_bw() + coord_fixed() + xlab('Variable 2') + ylab("Variable 1")
-    p <- p + scale_x_discrete(position = 'top')
-    p <- p + scale_y_discrete(limits = rev(unique(melt_df$Var1)))
     if(significance & any(!is.na(pw_qad$asymmetry_p.values))){
       melt_df_sign <- melt(as.matrix(pw_qad$asymmetry_p.values))
       melt_df_sign$value <- ifelse(melt_df_sign$value < sign.level & !is.na(melt_df_sign$value), '*','')
       melt_df$sign <- melt_df_sign$value
       melt_df$paste_value <- ifelse(is.na(melt_df$value), NA, paste(melt_df$value,melt_df$sign, sep=''))
-      p <- p + geom_text(data = melt_df, aes_(x = ~Var2, y = ~Var1, label = ~paste_value), color = "black", size = fontsize, na.rm=TRUE)
-    }else{
-      p <- p + geom_text(aes_(x = ~Var2, y = ~Var1, label = ~value), color = "black", size = fontsize, na.rm=TRUE)
     }
-    p
-
-
-
+    limit_plot <- c(-1,1)
+    legend_title <- "Asymmetry: \na:=q(x,y)-q(y,x)"
+    #color_pal <- c("#FDE725FF","#1FA187FF","#365C8DFF", "white",  "#365C8DFF", "#1FA187FF", "#FDE725FF")
+    if(color == "rainbow"){
+      color_pal <- c(rev(rainbow(rb_values[1], start = rb_values[2], end = rb_values[3])),rainbow(rb_values[1], start = rb_values[2], end = rb_values[3])[-1])
+    }else{
+      color_pal <- c(rev(viridis(5, option = color, direction = -1)),viridis(5, option = color, direction = -1)[-1])
+    }
   }else{
-    warning('Select an appropriate variable. Options are c("dependence","mean.dependence","asymmetry")')
+    stop('Select an appropriate select variable. Options are c("dependence","mean.dependence","asymmetry")')
   }
+
+  #Plot heatmap
+  p <- ggplot(data = melt_df, aes_(x = ~Var2, y = ~Var1, fill = ~value))
+  p <- p + geom_tile(color = 'white')
+  if(scale == "rel"){
+    p <- p + scale_fill_gradientn(colors = color_pal, na.value = "lightgrey", space = "Lab",
+                                  name = paste(legend_title))
+  }else{
+    p <- p + scale_fill_gradientn(colors = color_pal,
+                                  limits = limit_plot, na.value = "lightgrey", space = "Lab",
+                                  name = paste(legend_title))
+  }
+  p <- p + theme_bw() + coord_fixed() + xlab('Variable 2 (Y)') + ylab("Variable 1 (X)")
+  p <- p + scale_x_discrete(position = 'top')
+  p <- p + scale_y_discrete(limits = rev(unique(melt_df$Var1)))
+
+  if(significance & any(!is.na(pw_qad$q_p.values))){
+    p <- p + geom_text(data = melt_df, aes_(x = ~Var2, y = ~Var1, label = ~paste_value), color = "black", size = fontsize, na.rm=TRUE)
+  }else{
+    p <- p + geom_text(aes_(x = ~Var2, y = ~Var1, label = ~value), color = "black", size = fontsize, na.rm = TRUE)
+  }
+  p <- p + theme(axis.text.x = element_text(angle = 45, hjust = 0, vjust = -0.5))
+  p
+  return(p)
 }
 

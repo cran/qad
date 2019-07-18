@@ -5,7 +5,8 @@
 \title{Pairwise measures of (asymmetric) dependencies}
 \usage{
 pairwise.qad(data_df, resolution = NULL, permutation = FALSE,
-  nperm = 10, DoParallel = TRUE, ncores = NULL)
+  nperm = 10, DoParallel = TRUE, registerC = registerDoParallel,
+  ncores = NULL)
 }
 \arguments{
 \item{data_df}{a data frame containing numeric columns with the observations of the sample.}
@@ -18,6 +19,9 @@ Default (NULL) uses the optimal resolution, computed out of the sample size.}
 \item{nperm}{an integer indicating the number of permutation runs.}
 
 \item{DoParallel}{a logical value indicating whether the permutation test is computed parallelized.}
+
+\item{registerC}{function to register the parallel backend. It is recommended to use registerDoParallel() of the doParallel package (default). Other option is for example on a linux based system to install the
+doMC package and use registerDoMC}
 
 \item{ncores}{an integer indicating the number of cores used for parallelization. Default (NULL) uses the maximum number of cores minus 1.}
 }

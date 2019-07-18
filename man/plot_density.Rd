@@ -4,12 +4,17 @@
 \alias{plot_density}
 \title{Plot density of empirical checkerboard copula}
 \usage{
-plot_density(mass_matrix, density = TRUE)
+plot_density(mass_matrix, density = TRUE, color = "plasma",
+  rb_values = c(10, 0.315, 0.15))
 }
 \arguments{
 \item{mass_matrix}{a squared matrix containing the mass distribution, e.g. output of the function \code{emp_c_copula()}.}
 
 \item{density}{a logical (TRUE = default) whether the density or the mass is plotted.}
+
+\item{color}{Select the color palette. Options are c("plasma" (default), "viridis", "inferno", "magma", "cividis").}
+
+\item{rb_values}{a vector of size 3 with number of values, start value and end value in the rainbow colors space.}
 }
 \value{
 a density plot (or mass distribution)

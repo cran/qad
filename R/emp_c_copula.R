@@ -19,7 +19,7 @@
 #' i.e. there are no ties in the sample, the function \code{emp_c_copula()} gives the same result
 #' as the function \code{C.n()} in the \code{copula} package.
 #' If there are ties in the sample, the empirical copula is adjusted and calculated in the following way: \cr
-#' Let (u_i,v_i) := (F_n(x_i),G_n(y_i)) be the pseudo-observations for i in \{1,\ldots,n\} and (u_1',v_1'),\ldots, (u_m',v_m') the distinct pairs of pseudo-observations with m leq n. Moreover set S_1:=\{u_1, \ldots, u_{m_1}\} cup \{0,1\} and S_2:=\{v_1,\ldots, v_{m_2}\} cup \{0,1\} and define the quantities t_i,r_i and s_i for i=1,\ldots, m by
+#' Let (u_i,v_i) := (F_n(x_i),G_n(y_i)) be the pseudo-observations for i in \{1,\ldots,n\} and (u_1',v_1'),\ldots, (u_m',v_m') the distinct pairs of pseudo-observations with m leq n. Moreover set S_1:=\{0, u_1, \ldots, u_{m_1}\} and S_2:=\{0, v_1,\ldots, v_{m_2}\} and define the quantities t_i,r_i and s_i for i=1,\ldots, m by
 #' \deqn{t_i := sum_{j=1}^n 1_{(u_i',v_i')}(u_j,v_j)}
 #' \deqn{r_i := sum_{j=1}^n 1_{u_i}(u_j)}
 #' \deqn{s_i := sum_{j=1}^n 1_{v_i}(v_j)}
@@ -36,7 +36,7 @@
 #' @note The calculation of the empirical copula with a high sample size (and resolution rate) can take time.
 #'
 #' @references
-#' Deheuvels, P. (1979). La fonction de dépendance empirique et ses propriétés: un test non paramétrique d'indépendance, Acad. Roy. Belg. Bull. Cl. Sci., 5th Ser. 65, 274–292.
+#' Deheuvels, P. (1979). La fonction de dependance empirique et ses proprietas: un test non parametrique d'independance, Acad. Roy. Belg. Bull. Cl. Sci., 5th Ser. 65, 274-292.
 #'
 #' Li, X., Mikusinski, P. and Taylor, M.D. (1998). Strong approximation of copulas, Journal of Mathematical Analysis and Applications, 255, 608-623.
 #'
@@ -145,33 +145,32 @@ emp_c_copula_eval <- function(X, u, smoothing = TRUE, resolution){
     u <- data.frame(u)
     #Set grid for evaluation
     grid <- seq(0,1,length.out = N+1)
-    mass_new <- matrix(0, nrow= N+1, ncol = N+1)
+    mass_new <- matrix(0, nrow= N+2, ncol = N+2)
     mass_new[2 : (N+1), 2 : (N+1)] <- mass
 
     mass <- t(apply(apply(mass_new,2,cumsum),1,cumsum))
 
     bilinear_interpolation <- function(grid, z, x0, y0){
-      #Grid definitions
-      x <- grid
-      y <- grid
-      n <- length(x)
+      index_NA <- which(x0 < 0 | x0 > 1 | y0 < 0 | y0 >1)
+      x0 <- ifelse(x0 < 0 | x0 > 1, 0, x0)
+      y0 <- ifelse(y0 < 0 | y0 > 1, 0, y0)
 
-      #linear approximations to compute distances to node before
-      lx <- approx(x, 1:n, x0)$y
-      ly <- approx(y, 1:n, y0)$y
-      lx1 <- floor(lx)
-      ly1 <- floor(ly)
-      d_x <- lx - lx1
-      d_y <- ly - ly1
+      N <- length(grid) - 1
+      lbx_nr <- sapply(x0, function(x) max(which(grid <= x)))
+      lby_nr <- sapply(y0, function(x) max(which(grid <= x)))
+      grid <- c(grid,2*grid[length(grid)]-grid[length(grid)-1])
+      lbx <- x0 - grid[lbx_nr]
+      rbx <- grid[lbx_nr + 1] - x0
 
-      d_x[lx1 == n] <- 1
-      d_y[ly1 == n] <- 1
-      lx1[lx1 == n] <- n - 1
-      ly1[ly1 == n] <- n - 1
-      output <- z[cbind(lx1, ly1)] * (1 - d_x) * (1 - d_y) +
-        z[cbind(lx1 + 1, ly1)] * d_x * (1 - d_y) +
-        z[cbind(lx1, ly1 + 1)] * (1 - d_x) * d_y +
-        z[cbind(lx1 + 1, ly1 + 1)] * d_x * d_y
+      lby <- y0 - grid[lby_nr]
+      rby <- grid[lby_nr + 1] - y0
+
+      output <- z[cbind(lbx_nr, lby_nr)] * rbx * rby +
+                z[cbind(lbx_nr + 1, lby_nr)] * lbx * rby +
+                z[cbind(lbx_nr, lby_nr + 1)] * rbx * lby +
+                z[cbind(lbx_nr + 1, lby_nr + 1)] * lbx * lby
+      output <- output*N^2
+      output[index_NA] <- NA
       return(output)
     }
     return(bilinear_interpolation(grid, mass, u[,1], u[,2]))

@@ -5,8 +5,9 @@
 \title{Heatmap of dependence measures}
 \usage{
 heatmap.qad(pw_qad, select = c("dependence", "mean.dependence",
-  "asymmetry"), fontsize = 4, significance = TRUE, sign.level = 0.05,
-  scale = "abs")
+  "asymmetry"), fontsize = 4, significance = FALSE,
+  sign.level = 0.05, scale = "abs", color = "plasma",
+  rb_values = c(10, 0.315, 0.15))
 }
 \arguments{
 \item{pw_qad}{output of the function \code{pairwise.qad}().}
@@ -21,6 +22,10 @@ Options are c("dependence", "mean.dependence", "asymmetry").}
 \item{sign.level}{numeric value indicating the significance level.}
 
 \item{scale}{character indicating whether the heatmap uses a relative or absolute scale. Options are "rel" or "abs" (default).}
+
+\item{color}{Select the color palette. Options are c("plasma" (default), "viridis", "inferno", "magma", "cividis").}
+
+\item{rb_values}{a vector of size 3 with number of values, start value and end value in the rainbow colors space.}
 }
 \value{
 a heatmap
@@ -40,5 +45,5 @@ sample_df <- data.frame(x, y, z)
 
 #qad (Not Run)
 #model <- pairwise.qad(sample_df, permutation = TRUE, nperm = 10, DoParallel = TRUE)
-#heatmap.qad(model, select = "dependence", fontsize = 10, significance = TRUE)
+#heatmap.qad(model, select = "dependence", fontsize = 6, significance = TRUE)
 }
