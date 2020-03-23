@@ -4,10 +4,16 @@
 \alias{heatmap.qad}
 \title{Heatmap of dependence measures}
 \usage{
-heatmap.qad(pw_qad, select = c("dependence", "mean.dependence",
-  "asymmetry"), fontsize = 4, significance = FALSE,
-  sign.level = 0.05, scale = "abs", color = "plasma",
-  rb_values = c(10, 0.315, 0.15))
+heatmap.qad(
+  pw_qad,
+  select = c("dependence", "mean.dependence", "asymmetry"),
+  fontsize = 4,
+  significance = FALSE,
+  sign.level = 0.05,
+  scale = "abs",
+  color = "plasma",
+  rb_values = c(10, 0.315, 0.15)
+)
 }
 \arguments{
 \item{pw_qad}{output of the function \code{pairwise.qad}().}
@@ -44,6 +50,6 @@ z <- runif(n, 0, 1)
 sample_df <- data.frame(x, y, z)
 
 #qad (Not Run)
-#model <- pairwise.qad(sample_df, permutation = TRUE, nperm = 10, DoParallel = TRUE)
-#heatmap.qad(model, select = "dependence", fontsize = 6, significance = TRUE)
+model <- pairwise.qad(sample_df, permutation = FALSE)
+heatmap.qad(model, select = "dependence", fontsize = 6)
 }

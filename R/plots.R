@@ -53,12 +53,28 @@ plot.qad <- function(x, addSample = FALSE, copula = FALSE, density = FALSE, marg
       if(density){
         density_matrix <- mass_matrix*NROW(mass_matrix)*NCOL(mass_matrix)
         density_matrix <- ifelse(density_matrix == 0, NA, density_matrix)
-        data <- melt(density_matrix)
+
+        density_matrix <- data.table::as.data.table(density_matrix)
+        names(density_matrix) <- as.character(1:NCOL(density_matrix))
+        density_matrix$Var1 <- colnames(density_matrix)
+        data <- data.table::melt(density_matrix, id.vars = "Var1", variable.name = "Var2")
+        data$Var1 <- as.numeric(as.character(data$Var1))
+        data$Var2 <- as.numeric(as.character(data$Var2))
+
+        #data <- melt(density_matrix)
         n <- NROW(density_matrix)
       }else{
         cond_prob_matrix <- mass_matrix*NROW(mass_matrix)
         cond_prob_matrix <- ifelse(cond_prob_matrix==0, NA, cond_prob_matrix)
-        data <- melt(cond_prob_matrix)
+
+        cond_prob_matrix <- data.table::as.data.table(cond_prob_matrix)
+        names(cond_prob_matrix) <- as.character(1:NCOL(cond_prob_matrix))
+        cond_prob_matrix$Var1 <- colnames(cond_prob_matrix)
+        data <- data.table::melt(cond_prob_matrix, id.vars = "Var1", variable.name = "Var2")
+        data$Var1 <- as.numeric(as.character(data$Var1))
+        data$Var2 <- as.numeric(as.character(data$Var2))
+
+        #data <- melt(cond_prob_matrix)
         n <- NROW(cond_prob_matrix)
       }
 
@@ -177,10 +193,20 @@ plot_density <- function(mass_matrix, density=TRUE, color = "plasma", rb_values 
     mass_matrix <- mass_matrix*NROW(mass_matrix)*NCOL(mass_matrix)
   }
   mass_matrix <- ifelse(mass_matrix==0, NA, mass_matrix)
-  data <- melt(mass_matrix)
+
+  mass_matrix <- data.table::as.data.table(mass_matrix)
+  names(mass_matrix) <- as.character(1:NCOL(mass_matrix))
+  mass_matrix$Var1 <- colnames(mass_matrix)
+  data <- data.table::melt(mass_matrix, id.vars = "Var1", variable.name = "Var2")
+  data$Var1 <- as.numeric(as.character(data$Var1))
+  data$Var2 <- as.numeric(as.character(data$Var2))
+
+  #data <- melt(mass_matrix)
   names(data) <- c('x1','x2','value')
+  data <- as.data.frame(data)
   n <- NROW(mass_matrix)
-  p <- ggplot(data=data, aes_(x=~x1/n-1/n/2,y=~x2/n-1/n/2))
+
+  p <- ggplot(data=data, aes_(x=~x1/n - 1/n/2,y=~x2/n - 1/n/2))
   p <- p + geom_raster(aes_(fill=~value), alpha=0.95, na.rm = TRUE)
   if(density){
     if(color == "rainbow"){
@@ -229,17 +255,33 @@ plot_density <- function(mass_matrix, density=TRUE, color = "plasma", rb_values 
 #' sample_df <- data.frame(x, y, z)
 #'
 #' #qad (Not Run)
-#' #model <- pairwise.qad(sample_df, permutation = TRUE, nperm = 10, DoParallel = TRUE)
-#' #heatmap.qad(model, select = "dependence", fontsize = 6, significance = TRUE)
+#' model <- pairwise.qad(sample_df, permutation = FALSE)
+#' heatmap.qad(model, select = "dependence", fontsize = 6)
 
 heatmap.qad <- function(pw_qad, select = c('dependence','mean.dependence','asymmetry'), fontsize = 4, significance = FALSE,
                         sign.level = 0.05, scale = "abs", color = "plasma", rb_values = c(10, 0.315, 0.15)){
   #Select dependence measure
   if(select == 'dependence'){
-    melt_df <- melt(as.matrix(pw_qad$q))
+    ma <- as.matrix(pw_qad$q)
+    ma <- data.table::as.data.table(ma)
+    names(ma) <- as.character(1:NCOL(ma))
+    ma$Var1 <- colnames(ma)
+    melt_df <- data.table::melt(ma, id.vars = "Var1", variable.name = "Var2")
+    melt_df$Var1 <- as.numeric(as.character(melt_df$Var1))
+    melt_df$Var2 <- as.numeric(as.character(melt_df$Var2))
+
+    #melt_df <- melt(as.matrix(pw_qad$q))
     melt_df$value <- round(melt_df$value, 2)
     if(significance & any(!is.na(pw_qad$q_p.values))){
-      melt_df_sign <- melt(as.matrix(pw_qad$q_p.values))
+      ma_s <- as.matrix(pw_qad$q_p.values)
+      ma_s <- data.table::as.data.table(ma_s)
+      names(ma_s) <- as.character(1:NCOL(ma_s))
+      ma_s$Var1 <- colnames(ma_s)
+      melt_df_sign <- data.table::melt(ma_s, id.vars = "Var1", variable.name = "Var2")
+      melt_df_sign$Var1 <- as.numeric(as.character(melt_df_sign$Var1))
+      melt_df_sign$Var2 <- as.numeric(as.character(melt_df_sign$Var2))
+
+      #melt_df_sign <- melt(as.matrix(pw_qad$q_p.values))
       melt_df_sign$value <- ifelse(melt_df_sign$value < sign.level & !is.na(melt_df_sign$value), '*','')
       melt_df$sign <- melt_df_sign$value
       melt_df$paste_value <- ifelse(is.na(melt_df$value), NA, paste(melt_df$value,melt_df$sign, sep=''))
@@ -253,10 +295,26 @@ heatmap.qad <- function(pw_qad, select = c('dependence','mean.dependence','asymm
       color_pal <- viridis(5, option = color, direction = -1)
     }
   }else if(select == 'mean.dependence'){
-    melt_df <- melt(as.matrix(pw_qad$mean.dependence))
+    ma <- as.matrix(pw_qad$mean.dependence)
+    ma <- data.table::as.data.table(ma)
+    names(ma) <- as.character(1:NCOL(ma))
+    ma$Var1 <- colnames(ma)
+    melt_df <- data.table::melt(ma, id.vars = "Var1", variable.name = "Var2")
+    melt_df$Var1 <- as.numeric(as.character(melt_df$Var1))
+    melt_df$Var2 <- as.numeric(as.character(melt_df$Var2))
+
+    #melt_df <- melt(as.matrix(pw_qad$mean.dependence))
     melt_df$value <- round(melt_df$value, 2)
     if(significance & any(!is.na(pw_qad$mean.dependence_p.values))){
-      melt_df_sign <- melt(as.matrix(pw_qad$mean.dependence_p.values))
+      ma_s <- as.matrix(pw_qad$mean.dependence_p.values)
+      ma_s <- data.table::as.data.table(ma_s)
+      names(ma_s) <- as.character(1:NCOL(ma_s))
+      ma_s$Var1 <- colnames(ma_s)
+      melt_df_sign <- data.table::melt(ma_s, id.vars = "Var1", variable.name = "Var2")
+      melt_df_sign$Var1 <- as.numeric(as.character(melt_df_sign$Var1))
+      melt_df_sign$Var2 <- as.numeric(as.character(melt_df_sign$Var2))
+
+      #melt_df_sign <- melt(as.matrix(pw_qad$mean.dependence_p.values))
       melt_df_sign$value <- ifelse(melt_df_sign$value < sign.level & !is.na(melt_df_sign$value), '*','')
       melt_df$sign <- melt_df_sign$value
       melt_df$paste_value <- ifelse(is.na(melt_df$value), NA, paste(melt_df$value,melt_df$sign, sep=''))
@@ -270,10 +328,26 @@ heatmap.qad <- function(pw_qad, select = c('dependence','mean.dependence','asymm
       color_pal <- viridis(5, option = color, direction = -1)
     }
   }else if(select == 'asymmetry'){
-    melt_df <- melt(as.matrix(pw_qad$asymmetry))
+    ma <- as.matrix(pw_qad$asymmetry)
+    ma <- data.table::as.data.table(ma)
+    names(ma) <- as.character(1:NCOL(ma))
+    ma$Var1 <- colnames(ma)
+    melt_df <- data.table::melt(ma, id.vars = "Var1", variable.name = "Var2")
+    melt_df$Var1 <- as.numeric(as.character(melt_df$Var1))
+    melt_df$Var2 <- as.numeric(as.character(melt_df$Var2))
+
+    #melt_df <- melt(as.matrix(pw_qad$asymmetry))
     melt_df$value <- round(melt_df$value, 2)
     if(significance & any(!is.na(pw_qad$asymmetry_p.values))){
-      melt_df_sign <- melt(as.matrix(pw_qad$asymmetry_p.values))
+      ma_s <- as.matrix(pw_qad$asymmetry_p.values)
+      ma_s <- data.table::as.data.table(ma_s)
+      names(ma_s) <- as.character(1:NCOL(ma_s))
+      ma_s$Var1 <- colnames(ma_s)
+      melt_df_sign <- data.table::melt(ma_s, id.vars = "Var1", variable.name = "Var2")
+      melt_df_sign$Var1 <- as.numeric(as.character(melt_df_sign$Var1))
+      melt_df_sign$Var2 <- as.numeric(as.character(melt_df_sign$Var2))
+
+      #melt_df_sign <- melt(as.matrix(pw_qad$asymmetry_p.values))
       melt_df_sign$value <- ifelse(melt_df_sign$value < sign.level & !is.na(melt_df_sign$value), '*','')
       melt_df$sign <- melt_df_sign$value
       melt_df$paste_value <- ifelse(is.na(melt_df$value), NA, paste(melt_df$value,melt_df$sign, sep=''))

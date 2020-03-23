@@ -8,13 +8,30 @@
 \usage{
 qad(x, ...)
 
-\method{qad}{data.frame}(x, resolution = NULL, permutation = FALSE,
-  nperm = 100, DoParallel = TRUE, registerC = registerDoParallel,
-  ncores = NULL, print = TRUE, ...)
+\method{qad}{data.frame}(
+  x,
+  resolution = NULL,
+  permutation = FALSE,
+  nperm = 100,
+  DoParallel = TRUE,
+  registerC = registerDoParallel,
+  ncores = NULL,
+  print = TRUE,
+  ...
+)
 
-\method{qad}{numeric}(x, y, resolution = NULL, permutation = FALSE,
-  nperm = 100, DoParallel = TRUE, registerC = registerDoParallel,
-  ncores = NULL, print = TRUE, ...)
+\method{qad}{numeric}(
+  x,
+  y,
+  resolution = NULL,
+  permutation = FALSE,
+  nperm = 100,
+  DoParallel = TRUE,
+  registerC = registerDoParallel,
+  ncores = NULL,
+  print = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{a data.frame containing two columns with the observations of the bivariate sample or a (non-empty) numeric vector of data values}

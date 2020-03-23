@@ -4,9 +4,15 @@
 \alias{pairwise.qad}
 \title{Pairwise measures of (asymmetric) dependencies}
 \usage{
-pairwise.qad(data_df, resolution = NULL, permutation = FALSE,
-  nperm = 10, DoParallel = TRUE, registerC = registerDoParallel,
-  ncores = NULL)
+pairwise.qad(
+  data_df,
+  resolution = NULL,
+  permutation = FALSE,
+  nperm = 10,
+  DoParallel = TRUE,
+  registerC = registerDoParallel,
+  ncores = NULL
+)
 }
 \arguments{
 \item{data_df}{a data frame containing numeric columns with the observations of the sample.}

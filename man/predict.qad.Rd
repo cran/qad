@@ -4,9 +4,17 @@
 \alias{predict.qad}
 \title{Predict conditional probabilities}
 \usage{
-\method{predict}{qad}(object, values, conditioned = c("x1", "x2"),
-  nr_intervals = NULL, prediction_interval = NULL, copula = FALSE,
-  pred_plot = FALSE, panel.grid = TRUE, ...)
+\method{predict}{qad}(
+  object,
+  values,
+  conditioned = c("x1", "x2"),
+  nr_intervals = NULL,
+  prediction_interval = NULL,
+  copula = FALSE,
+  pred_plot = FALSE,
+  panel.grid = TRUE,
+  ...
+)
 }
 \arguments{
 \item{object}{an object of class 'qad', which determines the underlying checkerboard aggregation.}

@@ -4,10 +4,18 @@
 \alias{plot.qad}
 \title{Plot conditional probabilites}
 \usage{
-\method{plot}{qad}(x, addSample = FALSE, copula = FALSE,
-  density = FALSE, margins = FALSE, point.size = 0.8,
-  panel.grid = TRUE, color = "plasma", rb_values = c(10, 0.315,
-  0.15), ...)
+\method{plot}{qad}(
+  x,
+  addSample = FALSE,
+  copula = FALSE,
+  density = FALSE,
+  margins = FALSE,
+  point.size = 0.8,
+  panel.grid = TRUE,
+  color = "plasma",
+  rb_values = c(10, 0.315, 0.15),
+  ...
+)
 }
 \arguments{
 \item{x}{an object of class qad.}

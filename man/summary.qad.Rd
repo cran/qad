@@ -7,9 +7,12 @@
 \usage{
 \method{summary}{qad}(object, ...)
 
-\method{coef}{qad}(object, select = c("q(x1,x2)", "q(x2,x1)",
-  "mean.dependence", "asymmetry", "p.q(x1,x2)", "p.q(x2,x1)",
-  "p.mean.dependence", "p.asymmetry"), ...)
+\method{coef}{qad}(
+  object,
+  select = c("q(x1,x2)", "q(x2,x1)", "mean.dependence", "asymmetry", "p.q(x1,x2)",
+    "p.q(x2,x1)", "p.mean.dependence", "p.asymmetry"),
+  ...
+)
 }
 \arguments{
 \item{object}{an object of class 'qad'}
