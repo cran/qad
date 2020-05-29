@@ -4,7 +4,7 @@
 \alias{qad}
 \alias{qad.data.frame}
 \alias{qad.numeric}
-\title{Measure of (asymmetric) dependence}
+\title{Measure of (asymmetric and directed) dependence}
 \usage{
 qad(x, ...)
 
@@ -12,11 +12,12 @@ qad(x, ...)
   x,
   resolution = NULL,
   permutation = FALSE,
-  nperm = 100,
+  nperm = 1000,
   DoParallel = TRUE,
   registerC = registerDoParallel,
   ncores = NULL,
   print = TRUE,
+  remove.00 = FALSE,
   ...
 )
 
@@ -25,11 +26,12 @@ qad(x, ...)
   y,
   resolution = NULL,
   permutation = FALSE,
-  nperm = 100,
+  nperm = 1000,
   DoParallel = TRUE,
   registerC = registerDoParallel,
   ncores = NULL,
   print = TRUE,
+  remove.00 = FALSE,
   ...
 )
 }
@@ -41,18 +43,20 @@ qad(x, ...)
 \item{resolution}{an integer indicating the number of strips for the checkerboard aggregation (see \link{emp_c_copula}).
 Default = NULL uses the optimal resolution.}
 
-\item{permutation}{a logical indicating whether a permutated p-value is computed.}
+\item{permutation}{a logical indicating whether a p-value (based on permutations) is computed; otherwise a p-value is computed on MC-simulations (see pqad()).}
 
 \item{nperm}{an integer indicating the number of permutation runs.}
 
-\item{DoParallel}{a logical value indicating whether the permutation test is computed parallel.}
+\item{DoParallel}{a logical value indicating whether the repetitions in the permutation test is computed parallel.}
 
-\item{registerC}{function to register the parallel backend. It is recommended to use registerDoParallel() of the doParallel package (default). Another option for a linux based system is to install the
+\item{registerC}{function to register the parallel environment. It is recommended to use registerDoParallel(), contained in the doParallel package (default). Another option, especially for a linux based system, is to install the
 doMC package and use registerDoMC}
 
-\item{ncores}{an integer indicating the number of cores used for parallel calculation. Default = NULL uses max(cores)-1}
+\item{ncores}{an integer indicating the number of cores used for parallel computation. (Default = NULL, which is defined by max(cores)-1)}
 
-\item{print}{a logical indicating whether the result is printed into the console.}
+\item{print}{a logical indicating whether the result of qad is printed.}
+
+\item{remove.00}{a logical indicating whether double 0 entries should be excluded (default = FALSE)}
 
 \item{y}{a (non-empty) numeric vector of data values.}
 }
@@ -64,15 +68,16 @@ qad returns an object of class qad containing the following components:
 \item{resolution}{an integer containing the used resolution of the checkerboard aggregation.}
 }
 \description{
-Quantifies the (asymmetric) dependence structure between two random variables X and Y.
+Quantification of (asymmetric and directed) dependence structures between two random variables X and Y.
 }
 \details{
-qad is a strongly consistent estimator of the copula based dependence measure zeta_1 introduced in Trutschnig 2011.
+qad is the implementation of a strongly consistent estimator of the copula based dependence measure zeta_1 introduced in Trutschnig 2011.
 We first compute the empirical copula of a two-dimensional sample, aggregate it to the so called empirical checkerboard copula (ECB), and
-calculate zeta_1 of the ECB copula and its transpose. In order to test for equal dependence in both directions a permutation test based p-value is calculated.
+calculate zeta_1 of the ECB copula and its transpose. In order to test for independence (in both directions), the distribution (and hence the p-value)
+of a Monte-Carlo simulation is provided (default). Alternatively, a permutation test can be used to obtain p-values for the direction and asymmetry.
 }
 \note{
-The permutated p-values take some time. We suggest to run the function \code{qad()} without permutation at first.
+The computation of the p-values (aggregated by permutations) take some time.
 }
 \examples{
 #Example 1 (independence)

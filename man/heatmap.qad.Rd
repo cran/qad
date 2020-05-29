@@ -23,7 +23,7 @@ Options are c("dependence", "mean.dependence", "asymmetry").}
 
 \item{fontsize}{a numeric specifying the font size of the values.}
 
-\item{significance}{a logical indicating whether significant values - with respect to the permutated p.values - are marked with a star.}
+\item{significance}{a logical indicating whether significant values - with respect to the qad p.values - are denoted by a star.}
 
 \item{sign.level}{numeric value indicating the significance level.}
 

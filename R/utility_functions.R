@@ -156,3 +156,51 @@
   return(df_predict)
 }
 
+
+
+#Distribution function of qad (right continuous) P(qad < x)
+.ppqad <- function(q, n){
+  data <- mcData_independence$q
+  data_values <- data$qad_values
+  data_param <- data$param
+
+  if(n < 4){
+    return(rep(1,length(q)))
+  }else if(n < 1000){
+    grid <- seq(data_values[[as.character(n)]]$min_grid, data_values[[as.character(n)]]$max_grid, length.out = data_values[[as.character(n)]]$grid_length)
+    result <- approxfun(x = grid,
+                        y = data_values[[as.character(n)]]$q_n_approx_values_l,
+                        yleft = 0, yright = 1)(q)
+    return(result)
+  }else{
+    #Sort is included, otherwise there are wrong quantiles for very big n
+    result <- sort(as.numeric(apply(data_param, 1, function(p) p[1]*n^p[2] + p[3])))
+    return(approxfun(result, seq(0, 1, length.out = NROW(data_param)),
+                     yleft = 0, yright = 1)(q))
+  }
+}
+
+
+#Distribution function of mean qad (right continuous) P(meanqad < x)
+.ppmqad <- function(q, n){
+  data <- mcData_independence$mq
+  data_values <- data$qad_values
+  data_param <- data$param
+
+  if(n < 4){
+    return(rep(1,length(q)))
+  }else if(n < 1000){
+    grid <- seq(data_values[[as.character(n)]]$min_grid, data_values[[as.character(n)]]$max_grid, length.out = data_values[[as.character(n)]]$grid_length)
+    result <- approxfun(x = grid,
+                        y = data_values[[as.character(n)]]$q_n_approx_values_l,
+                        yleft = 0, yright = 1)(q)
+    return(result)
+  }else{
+    #Sort is included, otherwise there are wrong quantiles for very big n
+    result <- sort(as.numeric(apply(data_param, 1, function(p) p[1]*n^p[2] + p[3])))
+    return(approxfun(result, seq(0, 1, length.out = NROW(data_param)),
+                     yleft = 0, yright = 1)(q))
+  }
+}
+
+

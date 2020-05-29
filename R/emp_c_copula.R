@@ -77,30 +77,39 @@ emp_c_copula <- function(X, smoothing = TRUE, resolution) {
 
   #Determine the grid wrt the resolution
   grid <- seq(0, 1, length.out = N + 1)
-  grid <- data.table(expand.grid(grid,grid))
+  grid <- expand.grid(grid,grid)
   names(grid) <- c('x','y')
 
   #if there are no ties we can use the function C.n from the copula package
   if (length(x) == length(unique(x)) &
       length(y) == length(unique(y))) {
-    z <- C.n(as.matrix(grid), as.data.frame(X), smoothing = 'checkerboard')
+    z <- copula::C.n(as.matrix(grid), as.data.frame(X), smoothing = 'checkerboard')
     M <- matrix(z, nrow = N + 1, ncol = N + 1)
     mass <-
       M[-1,-1] + M[-(N + 1),-(N + 1)] - M[-1,-(N + 1)] - M[-(N + 1),-1]
   } else{
     #Calculate the ranks and the frequency of each rank of the sample
-    rank_x <- data.table(rank_x = rank(x, ties.method = 'max'))
-    tab_x <- rank_x[, .(freq_rank_x = .N), by = rank_x]
-    rank_y <- data.table(rank_y = rank(y, ties.method = 'max'))
-    tab_y <- rank_y[, .(freq_rank_y = .N), by = rank_y]
+    rank_x <- data.frame(rank_x = rank(x, ties.method = 'max'))
+    tab_x <- rank_x %>%
+      dplyr::group_by(rank_x) %>%
+      dplyr::summarise(freq_rank_x = n())
 
-    #Create data.table with rank informations
-    rank_df <- data.table(rank_x, rank_y)
-    rank_df <- rank_df[, .(freq = .N), by = .(rank_x, rank_y)]
-    rank_df <- merge(rank_df, tab_x, by = 'rank_x', all.x = TRUE)
-    rank_df <- merge(rank_df, tab_y, by = 'rank_y', all.x = TRUE)
-    rank_df <-
-      rank_df[, c('rank_x', 'rank_y', 'freq', 'freq_rank_x', 'freq_rank_y')]
+    #tab_x <- rank_x[, .(freq_rank_x = .N), by = rank_x]
+    rank_y <- data.frame(rank_y = rank(y, ties.method = 'max'))
+    #tab_y <- rank_y[, .(freq_rank_y = .N), by = rank_y]
+    tab_y <- rank_y %>%
+      dplyr::group_by(rank_y) %>%
+      dplyr::summarise(freq_rank_y = n())
+
+    #Create data.frame with rank informations
+    rank_df <- data.frame(rank_x, rank_y)
+    #rank_df <- rank_df[, .(freq = .N), by = .(rank_x, rank_y)]
+    rank_df <- rank_df %>%
+      dplyr::group_by(rank_x, rank_y) %>%
+      dplyr::summarise(freq = n())
+
+    rank_df <- dplyr::left_join(rank_df, tab_x, by = 'rank_x')
+    rank_df <- dplyr::left_join(rank_df, tab_y, by = 'rank_y')
 
     #Calculate the mass and the rectangles with min and max
     n <- length(x)

@@ -2,14 +2,16 @@
 % Please edit documentation in R/qad.R
 \name{pairwise.qad}
 \alias{pairwise.qad}
-\title{Pairwise measures of (asymmetric) dependencies}
+\title{Pairwise quantification of (asymmetric and directed) dependencies}
 \usage{
 pairwise.qad(
   data_df,
   resolution = NULL,
+  remove.00 = FALSE,
+  min.res = 3,
   permutation = FALSE,
-  nperm = 10,
-  DoParallel = TRUE,
+  nperm = 1000,
+  DoParallel = FALSE,
   registerC = registerDoParallel,
   ncores = NULL
 )
@@ -20,7 +22,11 @@ pairwise.qad(
 \item{resolution}{an integer indicating the number of strips for the checkerboard aggregation (see \link{emp_c_copula}()).
 Default (NULL) uses the optimal resolution, computed out of the sample size.}
 
-\item{permutation}{a logical indicating whether a permutated p-value is computed.}
+\item{remove.00}{a logical indicating whether double 0 entries should be excluded (default = FALSE)}
+
+\item{min.res}{an integer indicating the necessary minimum resolution of the checkerboard grid to compute qad, otherwise the result is NA (default = 3).}
+
+\item{permutation}{a logical indicating whether a p-value (based on permutations) is computed; (otherwise the p-value is computed by MC-simulation - see pqad()).}
 
 \item{nperm}{an integer indicating the number of permutation runs.}
 
@@ -32,8 +38,8 @@ doMC package and use registerDoMC}
 \item{ncores}{an integer indicating the number of cores used for parallelization. Default (NULL) uses the maximum number of cores minus 1.}
 }
 \value{
-a list, containing 6 data.frames with the dependence measures and corresponding p.values.
-The output of pairwise.qad can be illustrated with the function \code{heatmap.qad()}.
+a list, containing 8 data.frames with the dependence measures, corresponding p.values, the resolution of the checkerboard aggregation and the number of removed double zero entries (only if remove.00 = TRUE).
+The output of pairwise.qad() can be illustrated using the function \code{heatmap.qad()}.
 }
 \description{
 Pairwise computation of the function \code{qad}(). \code{qad}() is applied on each pair of variables of a numeric data.frame.
@@ -45,7 +51,7 @@ y <- runif(n, 0, 1)
 z <- runif(n, 0, 1)
 sample_df <- data.frame(x,y,z)
 
-#qad (Not Run)
-#model <- pairwise.qad(sample_df, permutation = TRUE, nperm = 20, DoParallel = TRUE)
-#heatmap.qad(model, select = "dependence", fontsize = 20, significance = TRUE)
+#qad
+model <- pairwise.qad(sample_df, permutation = FALSE)
+heatmap.qad(model, select = "dependence", fontsize = 5, significance = TRUE, sign.level = 0.05)
 }
