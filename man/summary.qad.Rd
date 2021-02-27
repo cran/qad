@@ -9,8 +9,8 @@
 
 \method{coef}{qad}(
   object,
-  select = c("q(x1,x2)", "q(x2,x1)", "mean.dependence", "asymmetry", "p.q(x1,x2)",
-    "p.q(x2,x1)", "p.mean.dependence", "p.asymmetry"),
+  select = c("q(x1,x2)", "q(x2,x1)", "max.dependence", "asymmetry", "p.q(x1,x2)",
+    "p.q(x2,x1)", "p.max.dependence", "p.asymmetry"),
   ...
 )
 }
@@ -19,7 +19,7 @@
 
 \item{...}{some methods for this generic require additional arguments. None are used in this method.}
 
-\item{select}{a vector of strings indicating which dependence measure should be returned. Options are c('q(x1,x2)', 'q(x2,x1)', 'mean.dependence', 'asymmetry')}
+\item{select}{a vector of strings indicating which dependence measure should be returned. Options are c('q(x1,x2)', 'q(x2,x1)', 'max.dependence', 'asymmetry')}
 }
 \value{
 an object containing the calculated values of a \code{qad} object.
@@ -31,14 +31,14 @@ the checkerboard copula and returns a list with the mentioned values.
 The function \code{coef()} returns a named vector with the selected values.
 }
 \examples{
-n <- 1000
+n <- 100
 x <- runif(n, 0, 1)
-y <- runif(n, 0, 1)
+y <- x^2 + rnorm(n, 0, 0.1)
 sample <- data.frame(x, y)
 ##(Not Run)
-# mod <- qad(sample, permutation = TRUE, nperm = 100, print = FALSE)
-# summary(mod)
-# coef(mod)
-# coef(mod, select = c('q(x1,x2)','p.q(x1,x2)'))
+fit <- qad(sample)
+summary(fit)
+coef(fit)
+coef(fit, select = c('q(x1,x2)','p.q(x1,x2)'))
 
 }

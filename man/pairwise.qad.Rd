@@ -6,36 +6,28 @@
 \usage{
 pairwise.qad(
   data_df,
-  resolution = NULL,
   remove.00 = FALSE,
   min.res = 3,
-  permutation = FALSE,
+  p.value = TRUE,
   nperm = 1000,
-  DoParallel = FALSE,
-  registerC = registerDoParallel,
-  ncores = NULL
+  p.value_asymmetry = FALSE,
+  nboot = 1000
 )
 }
 \arguments{
 \item{data_df}{a data frame containing numeric columns with the observations of the sample.}
 
-\item{resolution}{an integer indicating the number of strips for the checkerboard aggregation (see \link{emp_c_copula}()).
-Default (NULL) uses the optimal resolution, computed out of the sample size.}
-
 \item{remove.00}{a logical indicating whether double 0 entries should be excluded (default = FALSE)}
 
 \item{min.res}{an integer indicating the necessary minimum resolution of the checkerboard grid to compute qad, otherwise the result is NA (default = 3).}
 
-\item{permutation}{a logical indicating whether a p-value (based on permutations) is computed; (otherwise the p-value is computed by MC-simulation - see pqad()).}
+\item{p.value}{a logical indicating whether to return a p-value of rejecting independence (based on permutation).}
 
 \item{nperm}{an integer indicating the number of permutation runs.}
 
-\item{DoParallel}{a logical value indicating whether the permutation test is computed parallelized.}
+\item{p.value_asymmetry}{a logical indicating whether a p-value (based on bootstrap) is computed for the measure of asymmetry.}
 
-\item{registerC}{function to register the parallel backend. It is recommended to use registerDoParallel() of the doParallel package (default). Other option is for example on a linux based system to install the
-doMC package and use registerDoMC}
-
-\item{ncores}{an integer indicating the number of cores used for parallelization. Default (NULL) uses the maximum number of cores minus 1.}
+\item{nboot}{an integer indicating the number of bootstrapping runs.}
 }
 \value{
 a list, containing 8 data.frames with the dependence measures, corresponding p.values, the resolution of the checkerboard aggregation and the number of removed double zero entries (only if remove.00 = TRUE).
@@ -46,12 +38,12 @@ Pairwise computation of the function \code{qad}(). \code{qad}() is applied on ea
 }
 \examples{
 n <- 100
-x <- runif(n, 0, 1)
-y <- runif(n, 0, 1)
-z <- runif(n, 0, 1)
-sample_df <- data.frame(x,y,z)
-
-#qad
-model <- pairwise.qad(sample_df, permutation = FALSE)
-heatmap.qad(model, select = "dependence", fontsize = 5, significance = TRUE, sign.level = 0.05)
+x1 <- runif(n, 0, 1)
+x2 <- x1^2 + rnorm(n, 0, 0.1)
+x3 <- runif(n, 0, 1)
+x4 <- x3 - x2 + rnorm(n, 0, 0.1)
+sample_df <- data.frame(x1,x2,x3,x4)
+#Fit qad
+model <- pairwise.qad(sample_df, p.value = FALSE)
+heatmap.qad(model, select = "dependence", fontsize = 6)
 }

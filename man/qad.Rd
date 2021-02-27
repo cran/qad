@@ -11,11 +11,10 @@ qad(x, ...)
 \method{qad}{data.frame}(
   x,
   resolution = NULL,
-  permutation = FALSE,
+  p.value = TRUE,
   nperm = 1000,
-  DoParallel = TRUE,
-  registerC = registerDoParallel,
-  ncores = NULL,
+  p.value_asymmetry = FALSE,
+  nboot = 1000,
   print = TRUE,
   remove.00 = FALSE,
   ...
@@ -25,34 +24,29 @@ qad(x, ...)
   x,
   y,
   resolution = NULL,
-  permutation = FALSE,
+  p.value = TRUE,
   nperm = 1000,
-  DoParallel = TRUE,
-  registerC = registerDoParallel,
-  ncores = NULL,
+  p.value_asymmetry = FALSE,
+  nboot = 1000,
   print = TRUE,
   remove.00 = FALSE,
   ...
 )
 }
 \arguments{
-\item{x}{a data.frame containing two columns with the observations of the bivariate sample or a (non-empty) numeric vector of data values}
+\item{x}{a data.frame containing two columns with the observations of the bi-variate sample or a (non-empty) numeric vector of data values}
 
 \item{...}{Further arguments passed to 'qad' will be ignored}
 
-\item{resolution}{an integer indicating the number of strips for the checkerboard aggregation (see \link{emp_c_copula}).
-Default = NULL uses the optimal resolution.}
+\item{resolution}{an integer indicating the number of strips for the checkerboard aggregation (see \link{ECBC}). We recommend to use the default value (resolution = NULL)}
 
-\item{permutation}{a logical indicating whether a p-value (based on permutations) is computed; otherwise a p-value is computed on MC-simulations (see pqad()).}
+\item{p.value}{a logical indicating whether to return a p-value of rejecting independence (based on permutation).}
 
-\item{nperm}{an integer indicating the number of permutation runs.}
+\item{nperm}{an integer indicating the number of permutation runs (if p.value = TRUE)}
 
-\item{DoParallel}{a logical value indicating whether the repetitions in the permutation test is computed parallel.}
+\item{p.value_asymmetry}{a logical indicating whether to return a p-value for the measure of asymmetry (based on bootstrap).}
 
-\item{registerC}{function to register the parallel environment. It is recommended to use registerDoParallel(), contained in the doParallel package (default). Another option, especially for a linux based system, is to install the
-doMC package and use registerDoMC}
-
-\item{ncores}{an integer indicating the number of cores used for parallel computation. (Default = NULL, which is defined by max(cores)-1)}
+\item{nboot}{an integer indicating the number of runs for the bootstrap.}
 
 \item{print}{a logical indicating whether the result of qad is printed.}
 
@@ -63,26 +57,28 @@ doMC package and use registerDoMC}
 \value{
 qad returns an object of class qad containing the following components:
 \item{data}{ a data.frame containing the input data.}
+\item{q(X,Y)}{influence of X on Y}
+\item{q(Y,X)}{influence of Y on X}
+\item{max.dependence}{maximal dependence}
 \item{results}{ a data.frame containing the results of the dependence measures.}
 \item{mass_matrix}{ a matrix containing the mass distribution of the empirical checkerboard copula.}
 \item{resolution}{an integer containing the used resolution of the checkerboard aggregation.}
+\item{n}{Sample size.}
 }
 \description{
 Quantification of (asymmetric and directed) dependence structures between two random variables X and Y.
 }
 \details{
 qad is the implementation of a strongly consistent estimator of the copula based dependence measure zeta_1 introduced in Trutschnig 2011.
-We first compute the empirical copula of a two-dimensional sample, aggregate it to the so called empirical checkerboard copula (ECB), and
-calculate zeta_1 of the ECB copula and its transpose. In order to test for independence (in both directions), the distribution (and hence the p-value)
-of a Monte-Carlo simulation is provided (default). Alternatively, a permutation test can be used to obtain p-values for the direction and asymmetry.
-}
-\note{
-The computation of the p-values (aggregated by permutations) take some time.
+We first compute the empirical copula of a two-dimensional sample, aggregate it to the so called empirical checkerboard copula (ECBC), and
+calculate zeta_1 of the ECBC and its transpose. In order to test for independence (in both directions), a built-in p-value
+is implemented (a permutation test with nperm permutation runs to estimate the p-value).
+Furthermore, a bootstrap test with nboot runs can be applied to estimate a p-value for the measure of asymmetry a.
 }
 \examples{
 #Example 1 (independence)
 
-n <- 1000
+n <- 100
 x <- runif(n,0,1)
 y <- runif(n,0,1)
 sample <- data.frame(x,y)
@@ -92,7 +88,7 @@ qad(sample)
 
 #Example 2 (mutual complete dependence)
 
-n <- 1000
+n <- 500
 x <- runif(n,0,1)
 y <- x^2
 sample <- data.frame(x,y)
@@ -105,7 +101,19 @@ x <- runif(n,-10,10)
 y <- sin(x)
 sample <- data.frame(x,y)
 qad(sample)
+
+#Example 4 (Asymmetry)
+
+n <- 100
+x <- runif(n,0,1)
+y <- (2*x) \%\% 1
+qad(x, y, p.value_asymmetry = TRUE)
 }
 \references{
 Trutschnig, W. (2011). On a strong metric on the space of copulas and its induced dependence measure, Journal of Mathematical Analysis and Applications 384, 690-705.
+
+Junker, R., Griessenberger, F. and Trutschnig, W. (2021). Estimating scale-invariant directed dependence of bivariate distributions.  Computational Statistics and Data Analysis, 153.
+}
+\seealso{
+A tutorial can be found at \url{http://www.trutschnig.net/software.html}.
 }

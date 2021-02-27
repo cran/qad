@@ -16,15 +16,15 @@
 #' @return an object containing the calculated values of a \code{qad} object.
 #'
 #' @examples
-#' n <- 1000
+#' n <- 100
 #' x <- runif(n, 0, 1)
-#' y <- runif(n, 0, 1)
+#' y <- x^2 + rnorm(n, 0, 0.1)
 #' sample <- data.frame(x, y)
 #' ##(Not Run)
-#' # mod <- qad(sample, permutation = TRUE, nperm = 100, print = FALSE)
-#' # summary(mod)
-#' # coef(mod)
-#' # coef(mod, select = c('q(x1,x2)','p.q(x1,x2)'))
+#' fit <- qad(sample)
+#' summary(fit)
+#' coef(fit)
+#' coef(fit, select = c('q(x1,x2)','p.q(x1,x2)'))
 #'
 #' @method summary qad
 summary.qad <- function(object, ...) {
@@ -63,19 +63,27 @@ summary.qad <- function(object, ...) {
 
 #' @rdname summary.qad
 #' @method coef qad
-#' @param select a vector of strings indicating which dependence measure should be returned. Options are c('q(x1,x2)', 'q(x2,x1)', 'mean.dependence', 'asymmetry')
-coef.qad <- function(object, select = c('q(x1,x2)', 'q(x2,x1)', 'mean.dependence', 'asymmetry',
-                                        'p.q(x1,x2)','p.q(x2,x1)','p.mean.dependence','p.asymmetry'), ...){
+#' @param select a vector of strings indicating which dependence measure should be returned. Options are c('q(x1,x2)', 'q(x2,x1)', 'max.dependence', 'asymmetry')
+coef.qad <- function(object, select = c('q(x1,x2)', 'q(x2,x1)', 'max.dependence', 'asymmetry',
+                                        'p.q(x1,x2)','p.q(x2,x1)','p.max.dependence','p.asymmetry'), ...){
   results <- object$results
   coef_values <- c('q(x1,x2)' = results[1,2],
                    'q(x2,x1)' = results[2,2],
-                   'mean.dependence' = results[3,2],
+                   'max.dependence' = results[3,2],
                    'asymmetry' = results[4,2],
                    'p.q(x1,x2)' = results[1,3],
                    'p.q(x2,x1)' = results[2,3],
-                   'p.mean.dependence' = results[3,3],
+                   'p.max.dependence' = results[3,3],
                    'p.asymmetry' = results[4,3])
   return(coef_values[select])
 }
+
+
+
+
+
+
+
+
 
 

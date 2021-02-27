@@ -6,14 +6,18 @@
 \alias{qqad}
 \title{Distribution of qad (H0: independence)}
 \usage{
-pqad(q, n)
+pqad(q, n, R = 1000, resolution = NULL)
 
-qqad(p, n)
+qqad(p, n, R = 1000, resolution = NULL)
 }
 \arguments{
 \item{q}{vector of quantiles.}
 
-\item{n}{number of observations.}
+\item{n}{number of observations (or minimum of unique values, if ties occur).}
+
+\item{R}{number of repetitions (default R = 1000)}
+
+\item{resolution}{resolution of checkerboard copula (default  = NULL)}
 
 \item{p}{vector of probabilities.}
 }
@@ -26,17 +30,9 @@ Distribution function - P_H0(qad <= q) - and quantile function for the qad distr
 to the null hypthesis (H0) stating independence between X and Y.
 }
 \details{
-The distribution of qad was computed in the setting of independence
-between the random variables X and Y in the following way:
-
-For n < 1000, Monte Carlo (MC) simulation of H0 with 20.000 repetitions were executed
-for each sample size. According to these values the empirical cumulative distribution
-functions and the quantile functions were computed and then approximated on a coarser grid.
-
-For n >= 1000, MC simulations were executed again, but this time on a coarser sample size grid (steps of 100) until the size of 10.000.
-The so obtained quantiles were approximated using the parametric function a*n^b+c, whereby
-the parameters a,b,c were estimated using the R-function nls. Using the so calculated quantiles,
-the empirical distribution function and the quantile functions were approximated.
+The distribution of qad in the setting of independence, i.e., the random variables
+X and Y are independent. The distribution is calculated in the following way: Samples of size n
+are drawn from independent random variables. Then qad is calculated. The procedure is repeated R times. #'
 }
 \examples{
 pqad(0.3, 45)

@@ -41,29 +41,9 @@
 #' Li, X., Mikusinski, P. and Taylor, M.D. (1998). Strong approximation of copulas, Journal of Mathematical Analysis and Applications, 255, 608-623.
 #'
 #' Genest, C., Neshlehova J.G. and Remillard, B. (2014). On the empirical multilinear copula process for count data. Bernoulli, 20 (3), 1344-1371.
-#'
-#' @examples
-#' ## Generate data X from the product copula and compute the empirical copula
-#' n <- 1000
-#' x <- runif(n, 0, 1)
-#' y <- runif(n, 0, 1)
-#' X <- data.frame(x,y)
-#' #(Not Run)
-#' # mass_product <- emp_c_copula(X, smoothing = TRUE, resolution = 50)
-#' # eval_points <- data.frame(x = c(0.3,0.6), y = c(0.5,0.9))
-#' # eval_points$emp_cop <- emp_c_copula_eval(X, eval_points, smoothing = TRUE, resolution = 50)
-#' # eval_points$cop <- eval_points$x * eval_points$y
-#'
-#' ## Compute empirical checkerboard copula of a sample with ties and plot density
-#' n <- 1000
-#' x <- sample(runif(n, -1, 1), n, replace=TRUE)
-#' y <- x^2 + rnorm(n, 0, 1)
-#' X <- data.frame(x,y)
-#' #(Not Run)
-#' # mass <- emp_c_copula(X, smoothing = TRUE, resolution = 10)
-#' # plot_density(mass)
 
 emp_c_copula <- function(X, smoothing = TRUE, resolution) {
+  .Deprecated("ECBC")
   x <- as.numeric(data.frame(X[, 1:2])[, 1])
   y <- as.numeric(data.frame(X[, 1:2])[, 2])
 
@@ -148,6 +128,7 @@ emp_c_copula <- function(X, smoothing = TRUE, resolution) {
 #' (checkerboard) copula.
 
 emp_c_copula_eval <- function(X, u, smoothing = TRUE, resolution){
+  .Deprecated("ECBC.eval")
   if(class(u) == 'data.frame'){
     mass <- emp_c_copula(X, smoothing = smoothing, resolution)
     N <- NROW(mass)

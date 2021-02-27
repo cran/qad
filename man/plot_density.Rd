@@ -30,10 +30,9 @@ Plots the density/mass of the empirical checkerboard copula.
 n <- 1000
 x <- runif(n,0,1)
 y <- runif(n,0,1)
-sample <- data.frame(x,y)
-plot(sample)
+plot(x,y,pch = 16)
 
-mass <- emp_c_copula(sample, resolution=8)
+mass <- ECBC(x,y,resolution = 10)
 plot_density(mass, density=TRUE)
 plot_density(mass, density=FALSE)
 }

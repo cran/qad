@@ -7,7 +7,7 @@
 \method{predict}{qad}(
   object,
   values,
-  conditioned = c("x1", "x2"),
+  conditioned = "x1",
   nr_intervals = NULL,
   prediction_interval = NULL,
   copula = FALSE,
@@ -23,9 +23,7 @@
 
 \item{conditioned}{a character specifying on which variable is conditioned. Options are "x1" (default) or "x2".}
 
-\item{nr_intervals}{an integer, which determines the number of intervals for the prediction. Note, that in the copula setting
-the intervals are equidistant, in the data setting the retransformed intervals have different lengths. (default = NULL: the number of intervals is the
-resolution of the checkerboard copula)}
+\item{nr_intervals}{an integer, which determines a different number of intervals for the prediction (only possible in the copula setting).}
 
 \item{prediction_interval}{a vector specifying the interval boundaries for which the conditional probability is computed. Options are NULL (default) to predict the conditional probabilites for all intervals or a vector c(lower_boundary, upper_boundary) indicating the boundaries.}
 
@@ -38,29 +36,37 @@ resolution of the checkerboard copula)}
 \item{...}{some methods for this generic require additional arguments.  None are used in this method.}
 }
 \value{
-a named data.frame and a plot (optional). Each row stands for an evaluation point and the columns contain the conditional probabilities of the intervals.
+a list containing a data.frame with the interval boundaries and the prediction probabilities and a plot depicting the mass of the conditional distributions functions.
 }
 \description{
-The function \code{predict.qad()} predicts the probabilities
-to end up in specific intervals given x or y values and plots the conditional probabilities.
-The prediction can be computed in the copula setting
-or in the data setting.
+The function \code{predict.qad()} can be utilized to predict the probabilities of the event that Y lies in
+specific intervals given X=x, or vice versa. Additionally, the mass of the conditional distribution functions are plotted.
+The prediction can be computed in the sample setting as well as in the copula setting (pseudo-observation in the unit square).
 }
 \note{
-Predictions are only possible for values within the range of the sample (or between 0 and 1 in the copula setting). Values exceeding the range are removed.
+Predictions are only possible for values within the range of the sample (or between 0 and 1 in the copula setting). For given values exceeding the range NA is returned.
 }
 \examples{
-n <- 1000
-x <- runif(n, -1 ,1)
+set.seed(1)
+n <- 100
+x <- runif(n, -4 ,4)
 y <- x^2 + rnorm(n, 0, 1)
 sample <- data.frame(x, y)
 
 ##(Not Run)
-#mod <- qad(sample)
-#val <- c(-0.5, 0,1)
-#predict(mod, values = val, conditioned = "x1", copula = FALSE, pred_plot = TRUE)
-#predict(mod, values = val, conditioned = "x1", copula = TRUE)
-#predict(mod, values = val, conditioned = "x1", copula = TRUE, pred_plot = TRUE)
+qad.fit <- qad(sample)
+predict.qad(qad.fit, values = c(-2,0.6), conditioned = "x1", pred_plot = TRUE)
+predict.qad(qad.fit, values = c(1,9), conditioned = "x2", pred_plot = TRUE)
+predict.qad(qad.fit, values = c(-2,0.6), conditioned = "x1", pred_plot = FALSE,
+        nr_intervals = 4)
+predict.qad(qad.fit, values = c(-2,0.6), conditioned = "x1", pred_plot = FALSE,
+            prediction_interval = c(4,6))
+predict.qad(qad.fit, values = c(4,0.6), conditioned = "x2", pred_plot = FALSE,
+            prediction_interval = c(2,3))
+
+qad.pred <- predict.qad(qad.fit, values = c(-2,0.6), conditioned = "x1", pred_plot = FALSE)
+qad.pred$prediction
+qad.pred$plot
 
 
 }

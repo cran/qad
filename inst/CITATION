@@ -1,0 +1,26 @@
+bibentry(
+  header  = "To cite 'qad' in publications use:",
+  bibtype = "Manual",
+  title   = "qad: Quantification of Asymmetric Dependence",
+  author  = c(person("Florian", "Griessenberger"),
+              person("Robert R.", "Junker"),
+              person("Valentin", "Petzel"),
+              person("Wolfgang", "Trutschnig")),
+  year    = "2021",
+  note    = "R package version 1.0.0",
+  url     = "https://CRAN.R-project.org/package=qad"
+)
+
+bibentry(
+  header  = "If appropriate, use also:",
+  bibtype = "Article",
+  title    = "Estimating scale-invariant directed dependence of bivariate distributions",    author  = c(person("Robert R.", "Junker"),
+              person("Florian", "Griessenberger"),
+              person("Wolfgang", "Trutschnig")),
+  journal  = "Computational Statistics and Data Analysis",
+  year     = "2021",
+  volume   = "153",
+  pages    = "107058",
+  doi      = "10.1016/j.csda.2020.107058"
+)
+

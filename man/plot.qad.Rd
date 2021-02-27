@@ -10,7 +10,10 @@
   copula = FALSE,
   density = FALSE,
   margins = FALSE,
-  point.size = 0.8,
+  title = "",
+  x.axis = "X1",
+  y.axis = "X2",
+  point.size = 0.9,
   panel.grid = TRUE,
   color = "plasma",
   rb_values = c(10, 0.315, 0.15),
@@ -20,7 +23,7 @@
 \arguments{
 \item{x}{an object of class qad.}
 
-\item{addSample}{a logical determining whether the observations (or pseudo-observations) are added in the plot (default = FALSE).}
+\item{addSample}{a logical indicating whether the observations are returned. In the copula setting the mass squares of the empirical copula are added too. (default = FALSE).}
 
 \item{copula}{a logical indicating whether the plot depicts the conditional probabilities
 of the empirical checkerboard copula or of the retransformed data setting (default = FALSE).}
@@ -29,6 +32,12 @@ of the empirical checkerboard copula or of the retransformed data setting (defau
 Only works in the copula setting, i.e. if copula = TRUE.}
 
 \item{margins}{a logical indicating whether the margin distribution is added in form of a rug plot.}
+
+\item{title}{The text for the title}
+
+\item{x.axis}{The text for the x-axis}
+
+\item{y.axis}{The text for the y-axis}
 
 \item{point.size}{a numeric specifying the point size of the sample (relevant if addSample = TRUE).}
 
@@ -41,31 +50,31 @@ Only works in the copula setting, i.e. if copula = TRUE.}
 \item{...}{some methods for this generic require additional arguments.  None are used in this method.}
 }
 \description{
-Plots conditional probabilities for each strip of the checkerboard copula in the copula setting or in the retransformed data setting.
+Visualizes the conditional probabilities for each strip of the checkerboard copula in the copula setting or in the retransformed sample setting.
 }
 \note{
 The conditional probabilities are constant at squares in the copula setting. If the squares are retransformed in the data setting, the resulting objects are rectangles.
 }
 \examples{
 ## Example 1
-n <- 1000
+n <- 100
 x <- runif(n, 0, 1)
 y <- runif(n, 0, 1)
 sample <- data.frame(x, y)
 
-#qad (Not Run)
-# mod <- qad(sample)
-# plot(mod, addSample = TRUE, copula = FALSE)
+#qad
+fit <- qad(sample)
+plot(fit, addSample = TRUE, copula = FALSE)
 
 ## Example 2
-n <- 1000
+n <- 100
 x <- runif(n, -1, 1)
 y <- x^2 + rnorm(n, 0, 0.1)
 sample <- data.frame(x, y)
 
-#qad (Not Run)
-# mod <- qad(sample)
-# plot(mod, addSample = TRUE, copula = TRUE)
-# plot(mod, addSample = TRUE, copula = FALSE)
+#qad
+fit <- qad(sample)
+plot(fit, addSample = TRUE, copula = TRUE)
+plot(fit, addSample = TRUE, copula = FALSE)
 
 }

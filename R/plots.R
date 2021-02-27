@@ -1,10 +1,10 @@
 #' Plot conditional probabilites
 #'
-#' @description  Plots conditional probabilities for each strip of the checkerboard copula in the copula setting or in the retransformed data setting.
+#' @description  Visualizes the conditional probabilities for each strip of the checkerboard copula in the copula setting or in the retransformed sample setting.
 #'
 #'
 #' @param x an object of class qad.
-#' @param addSample a logical determining whether the observations (or pseudo-observations) are added in the plot (default = FALSE).
+#' @param addSample a logical indicating whether the observations are returned. In the copula setting the mass squares of the empirical copula are added too. (default = FALSE).
 #' @param copula a logical indicating whether the plot depicts the conditional probabilities
 #' of the empirical checkerboard copula or of the retransformed data setting (default = FALSE).
 #' @param density a logical indicating whether the density should be plotted instead of the conditional probabilites (default = FALSE).
@@ -14,83 +14,102 @@
 #' @param panel.grid a logical indicating whether the panel grid is plotted. (default = TRUE)
 #' @param color a color palette of the viridis package or rainbow. options are c("viridis", "magma", "inferno", "plasma", "cividis", "rainbow")
 #' @param rb_values a vector of size 3 with number of values, start value and end value in the rainbow colors space.
+#' @param title The text for the title
+#' @param x.axis The text for the x-axis
+#' @param y.axis The text for the y-axis
 #' @param ... some methods for this generic require additional arguments.  None are used in this method.
 #'
 #' @note The conditional probabilities are constant at squares in the copula setting. If the squares are retransformed in the data setting, the resulting objects are rectangles.
 #'
 #' @examples
 #' ## Example 1
-#' n <- 1000
+#' n <- 100
 #' x <- runif(n, 0, 1)
 #' y <- runif(n, 0, 1)
 #' sample <- data.frame(x, y)
 #'
-#' #qad (Not Run)
-#' # mod <- qad(sample)
-#' # plot(mod, addSample = TRUE, copula = FALSE)
+#' #qad
+#' fit <- qad(sample)
+#' plot(fit, addSample = TRUE, copula = FALSE)
 #'
 #' ## Example 2
-#' n <- 1000
+#' n <- 100
 #' x <- runif(n, -1, 1)
 #' y <- x^2 + rnorm(n, 0, 0.1)
 #' sample <- data.frame(x, y)
 #'
-#' #qad (Not Run)
-#' # mod <- qad(sample)
-#' # plot(mod, addSample = TRUE, copula = TRUE)
-#' # plot(mod, addSample = TRUE, copula = FALSE)
+#' #qad
+#' fit <- qad(sample)
+#' plot(fit, addSample = TRUE, copula = TRUE)
+#' plot(fit, addSample = TRUE, copula = FALSE)
 #'
 #' @method plot qad
 
-plot.qad <- function(x, addSample = FALSE, copula = FALSE, density = FALSE, margins = FALSE, point.size = 0.8, panel.grid = TRUE,
-                     color = "plasma", rb_values = c(10, 0.315, 0.15), ...){
+plot.qad <- function(x,
+                     addSample = FALSE,
+                     copula = FALSE,
+                     density = FALSE,
+                     margins = FALSE,
+                     title = "",
+                     x.axis = "X1",
+                     y.axis = "X2",
+                     point.size = 0.9,
+                     panel.grid = TRUE,
+                     color = "plasma",
+                     rb_values = c(10, 0.315, 0.15), ...){
   qad_output <- x
   if(class(qad_output)=='qad'){
-#Copula setting
+    #Mass matrix of the copula
+    mass_matrix <- qad_output$mass_matrix
+    if(density){
+      density_matrix <- mass_matrix*NROW(mass_matrix)*NCOL(mass_matrix)
+      density_matrix <- ifelse(density_matrix == 0, NA, density_matrix)
+      data <- as.data.frame(as.table(density_matrix))
+      n <- NROW(density_matrix)
+      l.title <- "Density"
+    }else{
+      cond_prob_matrix <- mass_matrix*NROW(mass_matrix)
+      cond_prob_matrix <- ifelse(cond_prob_matrix==0, NA, cond_prob_matrix)
+      data <- as.data.frame(as.table(cond_prob_matrix))
+      n <- NROW(cond_prob_matrix)
+      l.title <- "Cond. prob."
+    }
+
+    names(data) <- c('x1','x2','value')
+    data$x1 <- as.numeric(data$x1)
+    data$x2 <- as.numeric(data$x2)
+    sample_size <- length(qad_output$data$x1)
+
+
     if(copula){
-      mass_matrix <- qad_output$mass_matrix
-
-      if(density){
-        density_matrix <- mass_matrix*NROW(mass_matrix)*NCOL(mass_matrix)
-        density_matrix <- ifelse(density_matrix == 0, NA, density_matrix)
-
-        data <- as.data.frame(as.table(density_matrix))
-        n <- NROW(density_matrix)
-      }else{
-        cond_prob_matrix <- mass_matrix*NROW(mass_matrix)
-        cond_prob_matrix <- ifelse(cond_prob_matrix==0, NA, cond_prob_matrix)
-
-        data <- as.data.frame(as.table(cond_prob_matrix))
-        n <- NROW(cond_prob_matrix)
-      }
-
-      names(data) <- c('x1','x2','value')
-      data$x1 <- as.numeric(data$x1)
-      data$x2 <- as.numeric(data$x2)
-
-      sample_size <- length(qad_output$data$x1)
-
       p <- ggplot()
       p <- p + geom_raster(data=data, aes_(x=~x1/n-1/n/2,y=~x2/n-1/n/2 , fill=~value), alpha=0.95, na.rm = TRUE)
-      if(density){
-        if(color == "rainbow"){
-          p <- p + scale_fill_gradientn(colours = rainbow(rb_values[1], start = rb_values[2], end = rb_values[3]),
-                                        guide = guide_colorbar(title='Density'), na.value=NA)
-        }else{
-          p <- p + scale_fill_viridis_c(na.value = NA, space = "Lab", name = 'Density', option = color, direction = -1)
-        }
+      if(color == "rainbow"){
+        p <- p + scale_fill_gradientn(colours = rainbow(rb_values[1], start = rb_values[2], end = rb_values[3]),
+                                      guide = guide_colorbar(title=l.title), na.value=NA)
       }else{
-        if(color == "rainbow"){
-          p <- p + scale_fill_gradientn(colours = rainbow(rb_values[1], start = rb_values[2], end = rb_values[3]),
-                                        guide = guide_colorbar(title='Cond. prob.'), na.value=NA)
-        }else{
-          p <- p + scale_fill_viridis_c(na.value = NA, space = "Lab", name = 'Cond. prob.', option = color, direction = -1)
-        }
+        p <- p + scale_fill_viridis_c(na.value = NA, space = "Lab", name = l.title, option = color, direction = -1)
       }
-      p <- p + theme_bw() + xlab('x1') + ylab('x2') + ggtitle('Empirical checkerboard copula')
+      p <- p + theme_bw() + xlab(x.axis) + ylab(y.axis)
       if(addSample){
-        p <- p + geom_point(data=qad_output$data, aes(x=rank(x1, ties.method = 'max')/sample_size,
-                                                      y=rank(x2, ties.method = 'max')/sample_size), size=point.size)
+        if(n < 20){
+          M <- round(ECBC(qad_output$data$x1, qad_output$data$x2, resolution = length(qad_output$data$x1)),15)
+          M <- ifelse(M==0, NA, M)
+          m <- NROW(M)
+
+          Mdf <- as.data.frame(as.table(M), dnn =  1:m)
+          names(Mdf) <- c('x1','x2','value')
+          Mdf$x1 <- as.numeric(Mdf$x1)
+          Mdf$x2 <- as.numeric(Mdf$x2)
+          Mdf <- Mdf[!is.na(Mdf$value),]
+          p <- p + geom_raster(data = Mdf, aes_(x=~x1/m - 1/m/2,y=~x2/m - 1/m/2, fill = ~value), alpha = 0.35, fill = "grey20", na.rm = T)
+          p <- p + geom_point(data=qad_output$data, aes(x=rank(x1, ties.method = 'max')/sample_size,
+                                                        y=rank(x2, ties.method = 'max')/sample_size), size=point.size)
+        }else{
+          p <- p + geom_point(data=qad_output$data, aes(x=rank(x1, ties.method = 'max')/sample_size,
+                                                        y=rank(x2, ties.method = 'max')/sample_size), size=point.size)
+        }
+
       }
       if(margins){
         p <- p + geom_rug(data=qad_output$data, aes(x=rank(x1, ties.method = 'max')/sample_size,
@@ -103,6 +122,7 @@ plot.qad <- function(x, addSample = FALSE, copula = FALSE, density = FALSE, marg
       p <- p + theme(panel.grid = element_line(linetype = 'dashed'))
       p <- p + scale_x_continuous(breaks = function(x) pretty(x, 15))
       p <- p + scale_y_continuous(breaks = function(x) pretty(x, 15))
+      p <- p + ggtitle(title) + xlab(x.axis) + ylab(y.axis)
 
       return(p)
 #Data setting
@@ -111,20 +131,15 @@ plot.qad <- function(x, addSample = FALSE, copula = FALSE, density = FALSE, marg
       x2 <- qad_output$data$x2
       N <- qad_output$resolution
 
-      #middle point of each strip (checkerboard)
-      x_pobs <- seq(0,1-(1/N),length.out = N) + 1/(2*N)
+      #New
+      grid <- seq(0,1,length.out = N+1)
+      x_grid <- quantile(x1, grid, type = 1)
+      y_grid <- quantile(x2, grid, type = 1)
+      raster_grid1 <- expand.grid(xmin = x_grid[1:N], ymin = y_grid[1:N])
+      raster_grid2 <- expand.grid(xmax = x_grid[2:(N+1)], ymax = y_grid[2:(N+1)])
+      raster_grid <- dplyr::bind_cols(raster_grid1, raster_grid2)
+      raster_grid <- dplyr::bind_cols(raster_grid, data.frame(prob = data$value))
 
-      #prediction of each segment (for conditional probabilites)
-      df_predict <- .predict_qad_pseudoobservations(values = x_pobs, conditioned = 'x1', qad_output = qad_output, nr_intervals = N)
-
-      #Define the rectangles
-      raster_x <- data.frame(xmin=round(quantile(x1, 0:(N-1)/N),2), xmax=round(quantile(x1,1:N/N),2), id=1)
-      raster_y <- data.frame(ymin=round(quantile(x2, 0:(N-1)/N),2), ymax=round(quantile(x2,1:N/N),2), id=1)
-      raster_grid <- dplyr::full_join(raster_x,raster_y, by='id')
-
-      #Calculate the conditional probabilites for each rectangle
-      raster_grid$prob <- as.vector(t(as.matrix(df_predict)))
-      raster_grid$prob <- ifelse(raster_grid$prob == 0, NA, raster_grid$prob)
 
       p <- ggplot()
       p <- p + geom_rect(data=raster_grid, aes_(xmin=~xmin, xmax=~xmax, ymin=~ymin, ymax=~ymax,fill=~prob), alpha=0.95, na.rm = TRUE)
@@ -133,14 +148,14 @@ plot.qad <- function(x, addSample = FALSE, copula = FALSE, density = FALSE, marg
       }
       if(color == "rainbow"){
         p <- p + scale_fill_gradientn(colours = rainbow(rb_values[1], start = rb_values[2], end = rb_values[3]),
-                                      guide = guide_colorbar(title='Cond. prob.'), na.value=NA)
+                                      guide = guide_colorbar(title= l.title), na.value=NA)
       }else{
-        p <- p + scale_fill_viridis_c(na.value = NA, space = "Lab", name = 'Cond. prob.', option = color, direction = -1)
+        p <- p + scale_fill_viridis_c(na.value = NA, space = "Lab", name = l.title, option = color, direction = -1)
       }
       if(addSample){
-        p <- p + geom_point(data=qad_output$data, aes_(x=~x1,y=~x2), size=point.size)
+          p <- p + geom_point(data=qad_output$data, aes_(x=~x1,y=~x2), size=point.size)
       }
-      p <- p + theme_bw() + xlab('x1') + ylab('x2') + ggtitle('Conditional probabilities')
+      p <- p + theme_bw() + xlab('x1') + ylab('x2')
       if(!panel.grid){
         p <- p + theme(panel.grid.minor = element_line(colour = NA),
                        panel.grid.major = element_line(colour = NA))
@@ -148,6 +163,7 @@ plot.qad <- function(x, addSample = FALSE, copula = FALSE, density = FALSE, marg
       p <- p + theme(panel.grid = element_line(linetype = 'dashed'))
       p <- p + scale_x_continuous(breaks = function(x) pretty(x, 15))
       p <- p + scale_y_continuous(breaks = function(x) pretty(x, 15))
+      p <- p + ggtitle(title) + xlab(x.axis) + ylab(y.axis)
       return(p)
     }
   }
@@ -169,10 +185,9 @@ plot.qad <- function(x, addSample = FALSE, copula = FALSE, density = FALSE, marg
 #' n <- 1000
 #' x <- runif(n,0,1)
 #' y <- runif(n,0,1)
-#' sample <- data.frame(x,y)
-#' plot(sample)
+#' plot(x,y,pch = 16)
 #'
-#' mass <- emp_c_copula(sample, resolution=8)
+#' mass <- ECBC(x,y,resolution = 10)
 #' plot_density(mass, density=TRUE)
 #' plot_density(mass, density=FALSE)
 
@@ -220,30 +235,33 @@ plot_density <- function(mass_matrix, density=TRUE, color = "plasma", rb_values 
 #'
 #' @param pw_qad output of the function \code{pairwise.qad}().
 #' @param select a character indicating which dependence value is plotted.
-#' Options are c("dependence", "mean.dependence", "asymmetry").
+#' Options are c("dependence", "max.dependence", "asymmetry").
 #' @param fontsize a numeric specifying the font size of the values.
 #' @param significance a logical indicating whether significant values - with respect to the qad p.values - are denoted by a star.
 #' @param sign.level numeric value indicating the significance level.
 #' @param scale character indicating whether the heatmap uses a relative or absolute scale. Options are "rel" or "abs" (default).
 #' @param color Select the color palette. Options are c("plasma" (default), "viridis", "inferno", "magma", "cividis").
 #' @param rb_values a vector of size 3 with number of values, start value and end value in the rainbow colors space.
-#'
+#' @param title The text for the title
 #' @details If the output of \code{pairwise.qad}() contains p-values, significant values can be highlighted by stars by setting significance=TRUE.
 #'
 #' @return a heatmap
 #' @examples
-#' n <- 1000
-#' x <- runif(n, 0, 1)
-#' y <- x^2 + rnorm(n, 0, 1)
-#' z <- runif(n, 0, 1)
-#' sample_df <- data.frame(x, y, z)
-#'
-#' #qad (Not Run)
-#' model <- pairwise.qad(sample_df, permutation = FALSE)
+#' n <- 100
+#' x1 <- runif(n, 0, 1)
+#' x2 <- x1^2 + rnorm(n, 0, 0.1)
+#' x3 <- runif(n, 0, 1)
+#' x4 <- x3 - x2 + rnorm(n, 0, 0.1)
+#' sample_df <- data.frame(x1,x2,x3,x4)
+#' #Fit qad
+#' model <- pairwise.qad(sample_df, p.value = FALSE)
 #' heatmap.qad(model, select = "dependence", fontsize = 6)
 
-heatmap.qad <- function(pw_qad, select = c('dependence','mean.dependence','asymmetry'), fontsize = 4, significance = FALSE,
-                        sign.level = 0.05, scale = "abs", color = "plasma", rb_values = c(10, 0.315, 0.15)){
+heatmap.qad <- function(pw_qad, select = c('dependence','max.dependence','asymmetry'),
+                        fontsize = 4, significance = FALSE,
+                        sign.level = 0.05, scale = "abs", color = "plasma",
+                        rb_values = c(10, 0.315, 0.15),
+                        title = ""){
 
   prepare_data_long <- function(matr, matr.p, n_round = 3){
     df_matr <- as.data.frame(as.table(round(as.matrix(matr), n_round)))
@@ -271,9 +289,9 @@ heatmap.qad <- function(pw_qad, select = c('dependence','mean.dependence','asymm
     df_long <- prepare_data_long(pw_qad$q, pw_qad$q_p.values)
     legend_title <- "Dependence: \nq:=q(x,y)"
 
-  }else if(select == 'mean.dependence'){
-    df_long <- prepare_data_long(pw_qad$mean.dependence, pw_qad$mean.dependence_p.values)
-    legend_title <- "Mean dependence: \nmd:=(q(x,y)+q(y,x))/2"
+  }else if(select == 'max.dependence'){
+    df_long <- prepare_data_long(pw_qad$max.dependence, pw_qad$max.dependence_p.values)
+    legend_title <- "Max dependence:=\nmax(q(x,y)+q(y,x))"
 
   }else if(select == 'asymmetry'){
     df_long <- prepare_data_long(pw_qad$asymmetry, pw_qad$asymmetry_p.values)
@@ -285,7 +303,7 @@ heatmap.qad <- function(pw_qad, select = c('dependence','mean.dependence','asymm
       color_pal <- c(rev(viridis(5, option = color, direction = -1)),viridis(5, option = color, direction = -1)[-1])
     }
   }else{
-    stop('Select an appropriate select variable. Options are c("dependence","mean.dependence","asymmetry")')
+    stop('Select an appropriate select variable. Options are c("dependence","max.dependence","asymmetry")')
   }
 
   #Plot heatmap
@@ -308,14 +326,10 @@ heatmap.qad <- function(pw_qad, select = c('dependence','mean.dependence','asymm
   }
   p <- p + theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
   p <- p + scale_y_discrete(limits = rev(levels(df_long$Var1)))
+  p <- p + ggtitle(title)
   return(p)
 }
 
 
 
-
-#' Dataset which is used internally in the package
-#' @name mcData_independence
-#' @details Results of the monte carlo simulation for qad according to the setting of independence.
-"mcData_independence"
 

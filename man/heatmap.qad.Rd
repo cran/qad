@@ -6,20 +6,21 @@
 \usage{
 heatmap.qad(
   pw_qad,
-  select = c("dependence", "mean.dependence", "asymmetry"),
+  select = c("dependence", "max.dependence", "asymmetry"),
   fontsize = 4,
   significance = FALSE,
   sign.level = 0.05,
   scale = "abs",
   color = "plasma",
-  rb_values = c(10, 0.315, 0.15)
+  rb_values = c(10, 0.315, 0.15),
+  title = ""
 )
 }
 \arguments{
 \item{pw_qad}{output of the function \code{pairwise.qad}().}
 
 \item{select}{a character indicating which dependence value is plotted.
-Options are c("dependence", "mean.dependence", "asymmetry").}
+Options are c("dependence", "max.dependence", "asymmetry").}
 
 \item{fontsize}{a numeric specifying the font size of the values.}
 
@@ -32,6 +33,8 @@ Options are c("dependence", "mean.dependence", "asymmetry").}
 \item{color}{Select the color palette. Options are c("plasma" (default), "viridis", "inferno", "magma", "cividis").}
 
 \item{rb_values}{a vector of size 3 with number of values, start value and end value in the rainbow colors space.}
+
+\item{title}{The text for the title}
 }
 \value{
 a heatmap
@@ -43,13 +46,13 @@ The pairwise computed dependence measures (output of the function \code{pairwise
 If the output of \code{pairwise.qad}() contains p-values, significant values can be highlighted by stars by setting significance=TRUE.
 }
 \examples{
-n <- 1000
-x <- runif(n, 0, 1)
-y <- x^2 + rnorm(n, 0, 1)
-z <- runif(n, 0, 1)
-sample_df <- data.frame(x, y, z)
-
-#qad (Not Run)
-model <- pairwise.qad(sample_df, permutation = FALSE)
+n <- 100
+x1 <- runif(n, 0, 1)
+x2 <- x1^2 + rnorm(n, 0, 0.1)
+x3 <- runif(n, 0, 1)
+x4 <- x3 - x2 + rnorm(n, 0, 0.1)
+sample_df <- data.frame(x1,x2,x3,x4)
+#Fit qad
+model <- pairwise.qad(sample_df, p.value = FALSE)
 heatmap.qad(model, select = "dependence", fontsize = 6)
 }
