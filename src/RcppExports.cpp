@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // build_checkerboard_weights
 NumericMatrix build_checkerboard_weights(const NumericVector& X, const NumericVector& Y, R_xlen_t resolution);
 RcppExport SEXP _qad_build_checkerboard_weights(SEXP XSEXP, SEXP YSEXP, SEXP resolutionSEXP) {

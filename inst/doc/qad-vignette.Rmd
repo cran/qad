@@ -1,0 +1,437 @@
+---
+title: "Introduction to qad"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to qad}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "70%", 
+  echo = FALSE
+)
+library(ggplot2)
+library(qad)
+
+```
+
+---
+
+## Summary
+The R-package qad (short for quantification of asymmetric dependence) allows to quantify/estimate the (directed) dependence of two variables $X$ and $Y$. 
+The implemented estimator is copula based, hence scale-invariant, and estimates a directed (population based) dependence measure $q(X,Y)$ 
+attaining values in $[0,1]$ and having the following main property: $q(X,Y)$ is $1$ if and only if $Y$ is a function of $X$ (knowing $X$ means knowing $Y$) and $0$ if and only if $X$ and $Y$ are independent (no information gain). While the Pearson correlation coefficient assesses only linear and Spearman rank correlation only monotonic relationships, qad is able to detect any kind of association. 
+
+
+## Motivation
+All statistics courses mention independence. Loosely speaking, two random variables $X$ and $Y$ are called independent, if $X$ has no influence on $Y$ AND (by definition) vice versa.
+
+**Example (Rolling a dice twice - independence):**
+
+Let's assume that $X$ and $Y$ are random variables, whereby
+
+* $X$ is the result of rolling a dice the first time and
+* $Y$ is the result of rolling the same dice a second time.
+
+If we know $X$ (the outcome of rolling the dice the first time), does it help to predict $Y$? Obviously not. The probabilities/the distribution of $Y$ remain(s) unchanged, i.e., we do not gain any knowledge about $Y$ if we know $X$ (in fact, $Y$ is still uniformly distributed on $\{1,\ldots,6\}$) and vice versa. In other words: Knowing $X$ does not reduce the uncertainty about $Y$ and vice versa (try out the R-Code).
+
+```{r eval = FALSE, echo = TRUE, class.source = "fold-hide"}
+R <- 100000
+X <- sample(1:6, R, replace = T)
+Y <- sample(1:6, R, replace = T)
+
+#Probability that Y = 1
+mean(ifelse(Y == 1, 1, 0))
+
+#Probability that Y = 1 if we know X
+probs <- rep(0,6)
+for(i in 1:6){
+  probs[i] <- sum(ifelse(Y == 1 & X == i, 1, 0))/sum(X == i)
+}
+#Probability that Y = 1 if we know the value of X
+probs
+```
+
+
+What is the opposite of independence? Consider the following example:
+
+**Example (Almost complete dependence)**
+
+Suppose that $(x_1,y_1), \ldots, (x_n, y_n)$ is a sample of size $n=40$ from the model $Y=X^2+\varepsilon$ with noise $\varepsilon \sim \mathcal{N}(0,0.05)$ (see Figure):
+
+```{r plot1, echo=F, out.width = "70%", fig.align='center', fig.width=6, fig.height=4.5, fig.cap = "Sample of size n=40 drawn from the model $Y=X^2+\\varepsilon$."}
+set.seed(5)
+n <- 40
+X <- runif(n,-1,1)
+Y <- X^2 + rnorm(n, 0, 0.05)
+df <- data.frame(X,Y)
+f_col <- "grey70"
+
+f <- function(x) return(x^2)
+p <- ggplot()
+p <- p + geom_point(data = df, aes(x = X, y = Y))
+p <- p + geom_function(fun = f, color = "blue", alpha = 0.4, size = 1.2, n = 2000, xlim = c(-1,1))
+p <- p + geom_path(aes(x=c(-3/4,-3/4,-1.1), y= c(-0.1, f(-3/4), f(-3/4))), color = f_col, size = 1.1, 
+                   arrow = arrow(length = unit(0.1, "inches"), ends = "both"))
+p <- p + geom_path(aes(x=c(3/4,3/4,-1.1), y= c(-0.1,f(3/4),  f(3/4))), color = f_col, size = 1.1, 
+                   arrow = arrow(length = unit(0.1, "inches"), ends = "both"))
+p <- p + theme_bw() + theme(plot.title = element_text(hjust = 0.5))
+p <- p + scale_x_continuous(expand = c(0,0)) + scale_y_continuous(expand = c(0,0))
+p <- p + ggtitle("Parabola") + xlab("X") + ylab("Y")
+print(p)
+```
+
+Which variable is easier to predict given the value of the other one? Obviously, knowing the value of $X$ provides more information about the value of $Y$ than *vice versa*. Indeed, from the (estimated) equation $Y=X^2$ we can determine the value of Y, in the other direction, however, we have two possibilities for X given Y. 
+
+One natural question arising both theoretically as well as in practise is whether it is possible to quantify and estimate the extent of dependence of two random variables in full generality, i.e., without any distributional assumptions.  
+Commonly used measures of association such as Pearson $r$ or Spearman $\rho$ fail to detect any dependence for the situation depicted in 
+the previous Figure. Furthermore, interchanging $X$ and $Y$ yields the same result, and we get 
+
+* $r(X,Y)=r(Y,X)=$ `r round(cor(X,Y),3)`
+* $\rho(X,Y)=\rho(Y,X)=$ `r round(cor(X,Y, method = "spearman"),3)`
+
+Long story short: methods other than standard correlation are needed. 
+
+## qad
+
+**qad** (short for quantification of asymmetric dependence) is a strongly consistent estimator $q_n(X,Y)$ of the copula-based, 
+hence scale-invariant directed dependence measure 
+$q(X,Y)$ (originally called $\zeta_1$) introduced in <a href="https://www.sciencedirect.com/science/article/pii/S0022247X11005610">Trutschnig, 2011</a>. The qad estimator 
+$q_n(X,Y)$ was developed and analyzed in <a href="https://www.sciencedirect.com/science/article/pii/S0167947320301493">Junker, Griessenberger, Trutschnig, 2021</a> and implemented in the R-package qad in 2020. The population value $q(X,Y)$ has the following key properties:
+
+1. $q(X,Y)$ can be calculated for all (continuous) random variables $X$ and $Y$ (without any parametric knowledge about the distribution/model)
+2. $q(X,Y) \in [0,1]$ (normalization)
+3. $q(X,Y) = 0$ if and only if $X$ and $Y$ are independent (independence)
+4. $q(X,Y) = 1$ if and only if $Y$ is a function of $X$ (but not necessarily vice versa), i.e., if we have $Y=f(X)$, so if we are in the situation that 
+knowing $X$ means knowing $Y$ exactly (think of the Example without noise); this situation is usually referred to as complete dependence or full predictability
+5. We do not necessarily have $q(X,Y) = q(Y,X)$ (asymmetry)
+6. Scale changes do not affect $q(X,Y)$ (scale-invariance)
+
+Applying *qad* to the sample depicted in the previous Figure yields $q_n(X,Y)=$ `r round(zeta1(X,Y),3)`, 
+indicating a strong influence of $X$ on $Y$. On the other hand, 
+$q_n(Y,X) =$ `r round(zeta1(Y,X),3)`, i.e., the estimated influence of $Y$ on $X$ is much lower. 
+In other words: $Y$ is better predictable by $X$ than vice versa, hence the quantity 
+$a$ denoting asymmetry in dependence is positive:  $a_n:=q_n(X,Y)-q_n(Y,X)=$ `r round(zeta1(X,Y)-zeta1(Y,X),3)`. 
+
+In what follows the qad approach is sketched and some code examples are presented. We refer to <a href="https://www.sciencedirect.com/science/article/pii/S0167947320301493">Junker, Griessenberger, Trutschnig, 2021</a> and <a href="https://www.sciencedirect.com/science/article/pii/S0022247X11005610">Trutschnig, 2011</a> for a concise mathematical introduction and theoretical results. 
+
+
+\newline
+\newline
+
+```{r}
+myscatterplot <- function(x,y, pseudo = FALSE){
+  df <- data.frame(x,y)
+  if(pseudo){
+    df$x <- rank(df$x)/length(df$x)
+    df$y <- rank(df$y)/length(df$y)
+  }
+  p <- ggplot(df, aes(x=x, y=y))
+  p <- p + geom_point(color = "black", alpha = 0.9, size = 1.2) #ff78b4
+  p <- p + theme_bw()
+  p <- p + scale_x_continuous(breaks = function(x) pretty(x,8))
+  p <- p + scale_y_continuous(breaks = function(x) pretty(x,8))
+  p <- p + theme(panel.grid = element_blank())
+  return(p)
+}
+mydistributionplot <- function(fit){
+  data <- fit$mass_matrix*fit$resolution
+  res <- fit$resolution
+  grid <- seq(0, 1, length.out = fit$resolution + 1)
+
+  distr <- matrix(0, nrow = fit$resolution + 1, ncol = fit$resolution)
+  distr[-1,] <- apply(data, 1, cumsum)
+  distr <- data.frame(distr)
+  names(distr) <- c(paste("Strip",1:res))
+
+  distr0 <- distr
+  distr0$x <- grid
+  df0 <- reshape2::melt(distr0, variable.name = "Kernel", id.vars = c("x"))
+
+  #df_approx
+  R <- 1000
+  ngrid <- seq(0, 1, length.out = R)
+  distr <- data.frame(apply(distr, 2, function(x) return(approx(x = grid, y = x, xout = ngrid)$y)) )
+  distr$x <- ngrid
+  names(distr) <- c(paste("Strip",1:res),"x")
+
+  df <- reshape2::melt(distr, variable.name = "Kernel", id.vars = c("x"))
+  df$min <- pmin(df$value, df$x)
+  df$max <- pmax(df$value, df$x)
+
+  p <- ggplot()
+  p <- p + geom_line(data = df0, aes(x = x, y = value, color = Kernel), size = 1.03)
+  p <- p + geom_line(data = df0, aes(x = x, y = x), size = 1.05, linetype = "dashed")
+  p <- p + geom_line(data = subset(df0, df0$Kernel == "Strip 1"), aes(x = x, y = value), color = 'magenta', size = 1.05)
+
+  p <- p + geom_ribbon(data = subset(df, df$Kernel == "Strip 1"), aes(x = x, ymin = min, ymax = max),fill = "magenta", alpha = 0.3)
+  p <- p + scale_x_continuous(breaks = function(x) pretty(x, 8))
+  p <- p + scale_y_continuous(breaks = function(x) pretty(x, 8))
+  p <- p + scale_color_manual(values = rainbow(fit$resolution, start = 0.9, end = 0.4),
+                              guide = guide_legend(title.position = "top", title.hjust = 0.5))
+  p <- p + theme_bw() + labs(color = "Conditional distribution function for")
+  p <- p + theme(legend.position = "bottom", panel.grid.minor = element_line(linetype = "dashed"),
+                 panel.grid.major = element_blank())
+  return(p)
+}
+#_____________________________________________________________________________________________
+
+#Example 01 - less noise
+x <- df$X
+y <- df$Y
+coef <- coef(qad(x,y, print = FALSE))
+
+
+p1 <- myscatterplot(x,y) + xlab("X") + ylab("Y") + ggtitle(paste0("Sample of size n=", n))
+
+
+
+fit0 <- qad(x,y,resolution = n, print = FALSE)
+p2 <- plot(fit0, addSample = T, copula = T, panel.grid = F, density = T, color = "rainbow", rb_values = c(1,0.75,0.4))
+p2 <- p2 + xlab("U:=F(X)~U(0,1)") + ylab("V:=G(Y)~U(0,1)")
+
+
+p3 <- plot(fit0, addSample = T, copula = T, panel.grid = F, density = T, color = "rainbow", rb_values = c(1,0.75,0.4))
+p3 <- p3 + ggtitle("Empirical copula + checkerboard grid") + xlab("U:=F(X)~U(0,1)") + ylab("V:=G(Y)~U(0,1)")
+p3 <- p3 + geom_hline(yintercept = seq(0,1,1/floor(sqrt(length(x)))), linetype = "dashed", color = "red")
+p3 <- p3 + geom_vline(xintercept = seq(0,1,1/floor(sqrt(length(x)))), linetype = "dashed", color = "red")
+
+
+fit1 <- qad(X,Y, print = F)
+p4 <- plot(fit1, addSample = T, copula = T, panel.grid = F, density = T, color = "rainbow", rb_values = c(30,0.65,0.17)) +
+  ggtitle("Empirical checkerboard copula") + xlab("U:=F(X)~ U(0,1)") + ylab("V:=G(Y) ~ U(0,1)")  +
+  geom_hline(yintercept = seq(0,1,1/floor(sqrt(length(X)))), linetype = "dashed", color = "red") +
+  geom_vline(xintercept = seq(0,1,1/floor(sqrt(length(X)))), linetype = "dashed", color = "red")
+
+
+p5 <- mydistributionplot(fit1) +
+  ggtitle(label = "vertical strips",
+          subtitle = paste0("q_n(X,Y) ~", round(coef[1],3))) +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) + xlab("t") + ylab("P(V <= t | U in I_i)") +
+  theme(legend.position = "bottom", axis.title.x = element_blank())
+
+
+fit2 <- qad(Y,X, print = F)
+p6 <- mydistributionplot(fit2) +
+  ggtitle(label = "horizontal strips",
+          subtitle = paste0("q_n(Y,X) ~", round(coef[2],3))) +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) +
+  xlab("t") + ylab("P(U <= t | V in I_i)") +
+  theme(legend.position = "bottom", axis.title.x = element_blank())
+
+```
+
+## The idea and the approach behind qad
+The qad estimator $q_n(X,Y)$ is strongly consistent in full generality, i.e., we have $q_n(X,Y) \approx q(X,Y)$ for sufficiently large $n$ (see <a href="https://www.sciencedirect.com/science/article/pii/S0167947320301493">Junker, Griessenberger, Trutschnig, 2021</a>). The underlying 
+estimation procedure can be sketched as follows:
+
+- **(S0) Suppose that $(x_1, y_1),\ldots , (x_n, y_n)$ is a sample from $(X,Y)$.**
+
+```{r, fig.width=8, fig.height=7, fig.cap="Sample of size n=40", fig.align="center"}
+p1
+```
+
+- **(S1) Calculate the normalized ranks of the sample (we get values of the form $(i/n, j/n)$ with $i, j \in \{1, . . . , n\}$) as well as the so-called empirical copula $\hat{E}_n$.**
+
+```{r, fig.width=8, fig.height=7, fig.cap="Empirical copula and normalized ranks (points); notice that the masses are uniform over the squares and that,  by construction of the empirical copula, the upper right corner of the squares are the normalized ranks", fig.align="center"}
+p2
+```
+
+
+- **(S2) Aggregate the empirical copula to the empirical checkerboard copula $CB_N(\hat{E}_n)$ (a.k.a. 2-dimensional histogram in the copula setting). The masses of the little squares are aggregated/summed up to the larger $N \times N$ squares; the resolution N depends on the sample size n, in the current case we have $N=6$.**
+
+```{r, fig.width=8, fig.height=7, fig.cap="Empirical copula (left panel) and checkerboard aggregation with resolution $N=6$ (right panel)", fig.align="center"}
+p3
+p4
+```
+
+- **(S3) Calculate how different the checkerboard distribution and the uniform distribution on the unit square (modelling independence) are. More precisely, the conditional distribution functions of the checkerboard copula are compared with the distribution function of the uniform distribution on $[0,1]$ (in the sense that the area between the graphcs is calculated).**
+
+
+```{r, fig.width=8, fig.height=7, fig.cap="Distance between the conditional distriubtion functions of the checkerboard copula and the product copula, representing independence, for vertical strips (left panel) and horizontal strips (right panel)." }
+p5
+p6
+```
+
+- **(S4) Computing the sum of all areas and normalizing appropriately yields $q_n(X,Y)=$ `r round(zeta1(X,Y),3)` as well as $q_n(Y,X) =$ `r round(zeta1(Y,X),3)`**.
+
+\newline
+\newline
+
+
+## Install qad
+
+The R-package <a href="https://CRAN.R-project.org/package=qad">qad</a> is (freely) available on CRAN. You can download and install the current version of qad from [CRAN](https://CRAN.R-project.org) via:
+
+```{r eval = F, echo = T}
+install.packages("qad")
+library(qad)
+```
+
+Some basic instructions for the main functions in **qad** can be found with 
+
+```{r echo = T, eval = F}
+help("qad")
+help("qad-package")
+```
+
+
+
+## Some examples
+
+### Example 1 (Complete dependence):
+
+The following simulated example illustrates again how qad is capable of picking up asymmetry in dependence where standard measures fail. We generate a sample of size $n=100$ drawn from a sinusoidal association (a lof of information gain about $Y$ by knowing $X$, less vice versa) and compute qad in both directions using the function *qad()*.
+
+```{r example1, echo = TRUE, fig.width=8, fig.height=6, fig.align="center"}
+set.seed(1)
+
+## Step 1: Generate sample 
+n <- 100
+#Underlying Model Y = sin(X) + small.error
+X <- runif(n, -10, 10)
+Y <- sin(X) + rnorm(n, 0, 0.1)
+#Plot the sample 
+plot(X,Y, pch = 16)
+
+#Compute the dependence measure q_n (and the additional p-values obtained by testing for q=0 and a=0)
+fit <- qad(X,Y, p.value = T, p.value_asymmetry = T)
+```
+
+According to $q(x_1,x_2) > q(x_2,x_1)$ (in the notation from before meaning that $q_n(X,Y)>q_n(Y,X)$) the qad estimator informs us that $X$ 
+provides more information about $Y$ than vice versa. The qad function additionally calculates the maximum dependence, i.e., $\max\{q(x_1,x_2),q(x_2,x_1)\}$, 
+as well as the asymmetry value $a=q(x_1,x_2)-q(x_2,x_1)$. 
+Moreover, the output of qad provides p.values obtained by testing for independence and for symmetry in dependence via resampling methods (both hypotheses are rejected at the standard 
+significance level).   
+
+### Example 2 (Independence):
+The following simulated example shows that qad also detects independence. In fact, generating an independent sample of size $n=100$ and computing 
+qad in both directions using the function *qad()* yields the following: 
+
+```{r example2, echo = TRUE, fig.width=8, fig.height=6, fig.align="center"}
+set.seed(1)
+
+## Step 1: Generate sample 
+n <- 100
+#Underlying Model Y = sin(X) + error
+X <- rnorm(n, 0, 10)
+Y <- rnorm(n, 0, 20)
+#Plot the sample 
+plot(X,Y, pch = 16)
+
+#Compute the dependence measure q
+fit <- qad(X,Y, p.value = T)
+```
+
+Although the q-values are greater than $0$ (which is always the case by construction - the areas in (S3) can not be smaller than $0$), 
+the p.values corresponding to $q(x_1,x_2)$ and $q(x_2,x_1)$ are `r round(coef(fit)[5],3)` and `r round(coef(fit)[6],3)`, respectively. Both are much greater than $0.05$, so 
+the null hypothesis of independence of the underlying random variables $X$ and $Y$ is NOT rejected. Notice that for small sample sizes the q-values can be large, nevertheless
+according to the p.value the null hypothesis of independence is rejected (run the above code with $n=20$).
+
+
+## Additional information
+
+### Interpreting the output of qad
+The output of qad provides information about the number of unique ranks of the data, the resolution of
+the checkerboard copula, and the obtained estimates for dependence (in both directions) and asymmetry. 
+
+The number of unique ranks is key for calculating the resolution of the checkerboard copula. The larger the sample size, the larger 
+the resolution and the more precise the estimate of the dependence measures (in both directions). 
+When interpreting qad values we recommend to always take into account the resolution. qad vaues corresponding to resolutions of at most 3 
+should be interpreted cautiously (and by taking into account the small sample size). The qad function prints a warning in such cases:
+```{r echo=T}
+set.seed(11)
+x <- runif(4)
+y <- runif(4)
+qad(x,y)
+```
+
+As shown above, the main part of the qad output are estimates for the dependence measures $q(x_1,x_2)$ (indicating the directed dependence between $x_1$ and $x_2$, or equivalently, the information gain about $x_2$ by knowing $x_1$), $q(x_2,x_1)$ (indicating the directed dependence between $x_2$ and $x_1$, or equivalently, the information gain about $x_1$ by knowing $x_2$), the maximal dependence and the measure of asymmetry (which can be interpreted as estimate for the difference of the predictability of $x_2$ given knowledge on $x_1$ and the predictability of $x_1$ given knowledge on $x_2$). By default, in case of no ties in the data, the resolution $N$ is chosen as $\lfloor n^\frac{1}{2} \rfloor$,
+in case of ties, the sample size $n$ is replaced by the minimum number of unique values of $x_1$ and $x_2$.
+
+
+### qad as prediction tool
+As useful by-product of the calculation of the dependence measure qad, the random variables $Y$ given $X=x$ (in the sequel denoted by
+$Y \vert X=x$) and $X$ given $Y=y$ can be predicted for every $x\in Range(X)$ and $y\in Range\left(Y\right)$ in full generality, i.e., without any 
+prior assumptions on the distribution or the real regression function. 
+Using the afore-mentioned empirical checkerboard copula an estimator for the distribution function of the conditional random variable $Y|X=x$ can be derived. This conditional distribution function is then used to return the probability of the event that $Y|X=x$ lies in predefined intervals. 
+Thus, contrary to regression and many machine learning algorithms focusing on predicting only one value for $Y|X=x$ (usually the estimate for the conditional expectation $\mathbb{E}(Y|X=x)$) qad also returns probabilities for $Y|X=x$ to be contained in a number of intervals 
+(dependent on the sample size) and thereby provides additional useful information. 
+The subsequent example illustrates the forecasting procedure:
+
+```{r, echo=T, eval=T, results="hide"}
+#Generate sample
+set.seed(1)
+n <- 250
+y <- runif(n, -10, 10)
+x <- y^2 + rnorm(n, 0, 6)
+df <- data.frame(x=x,y=y)
+
+#Compute qad
+fit <- qad(df, print = FALSE)
+
+#Predict the values of Y given X=0 and Y given X=65)
+pred <- predict.qad(fit, values=c(0,65), conditioned=c("x1"), pred_plot = FALSE)
+#Output as data.frame
+pred$prediction
+#Output as plot
+pp <- pred$plot + theme_classic() + theme(plot.title = element_blank(), legend.position = c(0.9,0.5))
+#pp
+```
+
+```{r, echo=F, eval=T, results="hold"}
+#Generate sample
+pred$prediction
+```
+
+```{r plotforecast, fig.align="center", fig.width=8, fig.height=6, fig.cap="Sample of the data (left panel) and prediction probabilities of qad (right panel)"}
+p <- ggplot(df, aes(x=x,y=y))
+p <- p + geom_point()
+p <- p + theme_bw()
+p
+pp
+```
+
+The output of *predict.qad()* consists of the intervals (lower and upper boundary) and corresponding estimated probabilities. For the data in the Figure we get that given $X=65$, the probability for $Y$ lying between $-9.74$ and $-6.38$ is $0.24$, and for lying 
+between $5.58$ and $9.85$ is $0.76$. 
+
+
+
+### Data with ties
+The qad estimator has originally been developed for data without ties, i.e., for random variables $X$ and $Y$ having 
+continuous distribution functions. However, numerous simulations have shown that qad also performs well for data with ties (same entries appearing many times). Formally, the qad approach always calculates a checkerboard copula based on the empirical copula, no matter if the data have ties or not. Nevertheless in the setting with ties the empirical copula may build upon rectangles instead of squares and the precision of the estimator may decrease.
+
+Mathematically speaking, suppose that $(x_1, y_1), \ldots, (x_n, y_n)$ is a sample of $(X, Y)$ and let $H_n$ denote the bivariate empirical distribution function and $F_n$, $G_n$ the univariate empirical marginal distribution functions. Then there exists a unique subcopula $E_n': Range(F_n) \times Range(G_n) \to Range(H_n)$ defined by 
+$$ E_n'(s_1,s_2) = \frac{1}{n} \sum_{i=1}^n 1_{[0,s_1] \times [0,s_2]} (F_n(x_i), G_n(y_i)) $$
+for all $(s_1, s_2) \in Range(F_n) \times Range(G_n)$. Extending $E_n'$ to full $[0, 1]^2$ via bilinear interpolation
+yields a unique absolutely continuous copula $E_n$ which we refer to as empirical copula. For this very copula the checkerboard aggregation and the dependence measure of the latter is calculated. 
+The following example illustrates the approach in case of ties:
+
+```{r echo = T, fig.align="center", fig.width=8, fig.height=6, fig.cap="Empirical checkerboard copula (big squares) and empirical copula (grey rectangles) together with the normalized ranks of a sample of size n=30 containing ties. Note, that the empirical copula may not longer consist of squares with equal length due to the ties." }
+set.seed(1)
+n <- 30
+x <- sample(-10:10, n, replace = T)
+y <- x^2 
+fit <- qad(x,y, print = F)
+plot(fit, addSample = T, copula = T, density = T, point.size = 1.1)
+```
+
+```{r echo = T}
+qad(x,y, print = T)
+
+```
+
+
+
+# References
+
+- R.R. Junker, F. Griessenberger, W. Trutschnig: Estimating scale-invariant directed dependence of bivariate distributions, *Computational Statistics and Data Analysis*, (2021), 153, 107058, <a href = "https://doi.org/10.1016/j.csda.2020.107058">https://doi.org/10.1016/j.csda.2020.107058</a>
+
+- R.R. Junker, F. Griessenberger, W. Trutschnig: A copula-based measure for quantifying asymmetry in dependence and associations, https://arxiv.org/abs/1902.00203
+
+- W. Trutschnig: On a strong metric on the space of copulas and its induced dependence measure, *Journal of Mathematical Analysis and Applications*, 2011, (384), 690-705. <a href="https://www.sciencedirect.com/science/article/pii/S0022247X11005610">https://doi.org/10.1016/j.jmaa.2011.06.013</a>
