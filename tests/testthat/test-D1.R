@@ -1,5 +1,4 @@
-context("D1 distance")
-
+#context("D1 distance")
 test_that("D1 distance works correctly", {
   n <- 100
   x1 <- 1:n

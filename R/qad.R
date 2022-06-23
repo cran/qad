@@ -9,7 +9,7 @@
 #' @param resolution an integer indicating the number of strips for the checkerboard aggregation (see \link{ECBC}). We recommend to use the default value (resolution = NULL)
 #' @param p.value a logical indicating whether to return a p-value of rejecting independence (based on permutation).
 #' @param nperm an integer indicating the number of permutation runs (if p.value = TRUE)
-#' @param p.value_asymmetry a logical indicating whether to return a p-value for the measure of asymmetry (based on bootstrap).
+#' @param p.value_asymmetry a logical indicating whether to return a (heuristic) p-value for the measure of asymmetry (based on bootstrap).
 #' @param nboot an integer indicating the number of runs for the bootstrap.
 #' @param print a logical indicating whether the result of qad is printed.
 #' @param remove.00 a logical indicating whether double 0 entries should be excluded (default = FALSE)
@@ -19,7 +19,7 @@
 #' We first compute the empirical copula of a two-dimensional sample, aggregate it to the so called empirical checkerboard copula (ECBC), and
 #' calculate zeta_1 of the ECBC and its transpose. In order to test for independence (in both directions), a built-in p-value
 #' is implemented (a permutation test with nperm permutation runs to estimate the p-value).
-#' Furthermore, a bootstrap test with nboot runs can be applied to estimate a p-value for the measure of asymmetry a.
+#' Furthermore, a (heuristic) bootstrap test with nboot runs can be applied to estimate a p-value for the measure of asymmetry a.
 #'
 #'
 #' @return qad returns an object of class qad containing the following components:
@@ -71,7 +71,7 @@
 #' n <- 100
 #' x <- runif(n,0,1)
 #' y <- (2*x) %% 1
-#' qad(x, y, p.value_asymmetry = TRUE)
+#' qad(x, y)
 
 
 
@@ -298,10 +298,11 @@ qad.numeric <- function(x, y , resolution = NULL,
 #' @param min.res an integer indicating the necessary minimum resolution of the checkerboard grid to compute qad, otherwise the result is NA (default = 3).
 #' @param p.value a logical indicating whether to return a p-value of rejecting independence (based on permutation).
 #' @param nperm an integer indicating the number of permutation runs.
+#' @param p.adjust.method a character string denoting the p.value correction method (see function p.adjust in stats). Options are c('holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr' (default), 'none')
 #' @param p.value_asymmetry a logical indicating whether a p-value (based on bootstrap) is computed for the measure of asymmetry.
 #' @param nboot an integer indicating the number of bootstrapping runs.
 #'
-#' @return a list, containing 8 data.frames with the dependence measures, corresponding p.values, the resolution of the checkerboard aggregation and the number of removed double zero entries (only if remove.00 = TRUE).
+#' @return a list, containing data.frames with the dependence measures, corresponding p.values, the resolution of the checkerboard aggregation and the number of removed double zero entries (only if remove.00 = TRUE).
 #' The output of pairwise.qad() can be illustrated using the function \code{heatmap.qad()}.
 #'
 #' @examples
@@ -312,12 +313,14 @@ qad.numeric <- function(x, y , resolution = NULL,
 #' x4 <- x3 - x2 + rnorm(n, 0, 0.1)
 #' sample_df <- data.frame(x1,x2,x3,x4)
 #' #Fit qad
-#' model <- pairwise.qad(sample_df, p.value = FALSE)
+#' model <- pairwise.qad(sample_df, p.value = TRUE, p.adjust.method = "fdr")
 #' heatmap.qad(model, select = "dependence", fontsize = 6)
 
 
 pairwise.qad <- function(data_df, remove.00 = FALSE, min.res = 3,
-                         p.value = TRUE, nperm = 1000,
+                         p.value = TRUE,
+                         nperm = 1000,
+                         p.adjust.method = "fdr",
                          p.value_asymmetry = FALSE, nboot = 1000){
 
 
@@ -331,7 +334,7 @@ pairwise.qad <- function(data_df, remove.00 = FALSE, min.res = 3,
   M <- data.frame(matrix(as.numeric(NA), nrow = n_var, ncol = n_var))
   colnames(M) <- row.names(M) <- var_names
   qM <- maxM <- aM <- M
-  qM.pvalue <- maxM.pvalue <- aM.pvalue <- M
+  qM.pvalue <- qM.pvalue.adjusted <- maxM.pvalue <- maxM.pvalue.adjusted <- aM.pvalue <- aM.pvalue.adjusted <- M
   resM <- uniqueranksM <- M
   N_00 <- M
 
@@ -402,17 +405,26 @@ pairwise.qad <- function(data_df, remove.00 = FALSE, min.res = 3,
     print(paste('computation process:', i+1,'/',n_var))
   }
 
-
+  qM.pvalue.adjusted <- as.data.frame(matrix(stats::p.adjust(as.matrix(qM.pvalue), method = p.adjust.method), nrow = NROW(qM.pvalue), ncol = NCOL(qM.pvalue)))
+  row.names(qM.pvalue.adjusted) <- colnames(qM.pvalue.adjusted) <- row.names(qM.pvalue)
+  maxM.pvalue.adjusted <- as.data.frame(matrix(stats::p.adjust(as.matrix(maxM.pvalue), method = p.adjust.method), nrow = NROW(maxM.pvalue), ncol = NCOL(maxM.pvalue)))
+  row.names(maxM.pvalue.adjusted) <- colnames(maxM.pvalue.adjusted) <- row.names(maxM.pvalue)
+  aM.pvalue.adjusted <- as.data.frame(matrix(stats::p.adjust(as.matrix(aM.pvalue), method = p.adjust.method), nrow = NROW(aM.pvalue), ncol = NCOL(aM.pvalue)))
+  row.names(aM.pvalue.adjusted) <- colnames(aM.pvalue.adjusted) <- row.names(aM.pvalue)
 
   return(list(q = qM,
               max.dependence = maxM,
               asymmetry = aM,
               q_p.values = qM.pvalue,
+              q_p.values.adjusted = qM.pvalue.adjusted,
               max.dependence_p.values = maxM.pvalue,
+              max.dependence_p.values.adjusted = maxM.pvalue.adjusted,
               asymmetry_p.values = aM.pvalue,
+              asymmetry_p.values.adjusted = aM.pvalue.adjusted,
               resolution = resM,
               #n_distinct_ranks = uniqueranksM,
-              n_removed_00 = N_00))
+              n_removed_00 = N_00,
+              p.adjust.method = p.adjust.method))
 }
 
 

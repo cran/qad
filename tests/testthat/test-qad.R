@@ -1,4 +1,4 @@
-context("qad and zeta1")
+#context("qad and zeta1")
 
 test_that("zeta1 returns exact values", {
   #Example 1
@@ -53,8 +53,18 @@ pw_fit <- pairwise.qad(df)
 
 test_that("pairwise qad", {
   expect_equal(class(pw_fit), "list")
-  expect_equal(length(pw_fit), 8)
-  expect_equal(names(pw_fit), c("q", "max.dependence", "asymmetry", "q_p.values", "max.dependence_p.values", "asymmetry_p.values", "resolution", "n_removed_00")
+  expect_equal(names(pw_fit), c("q",
+                                "max.dependence",
+                                "asymmetry",
+                                "q_p.values",
+                                "q_p.values.adjusted",
+                                "max.dependence_p.values",
+                                "max.dependence_p.values.adjusted",
+                                "asymmetry_p.values",
+                                "asymmetry_p.values.adjusted",
+                                "resolution",
+                                "n_removed_00",
+                                "p.adjust.method")
 )
   expect_equal(class(pw_fit$q), "data.frame")
   expect_equal(class(pw_fit$max.dependence), "data.frame")

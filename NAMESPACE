@@ -31,7 +31,7 @@ import(copula)
 import(viridis)
 importFrom("cowplot", "plot_grid")
 importFrom("grDevices", "rainbow")
-importFrom("stats", "ecdf", "quantile", "na.omit", "approxfun", "approx", "model.frame", "runif", "median")
+importFrom("stats", "ecdf", "quantile", "na.omit", "approxfun", "approx", "model.frame", "runif", "median", "p.adjust")
 importFrom("ggExtra", "ggMarginal")
 importFrom("Rcpp", "evalCpp")
 

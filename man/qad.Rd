@@ -44,7 +44,7 @@ qad(x, ...)
 
 \item{nperm}{an integer indicating the number of permutation runs (if p.value = TRUE)}
 
-\item{p.value_asymmetry}{a logical indicating whether to return a p-value for the measure of asymmetry (based on bootstrap).}
+\item{p.value_asymmetry}{a logical indicating whether to return a (heuristic) p-value for the measure of asymmetry (based on bootstrap).}
 
 \item{nboot}{an integer indicating the number of runs for the bootstrap.}
 
@@ -73,7 +73,7 @@ qad is the implementation of a strongly consistent estimator of the copula based
 We first compute the empirical copula of a two-dimensional sample, aggregate it to the so called empirical checkerboard copula (ECBC), and
 calculate zeta_1 of the ECBC and its transpose. In order to test for independence (in both directions), a built-in p-value
 is implemented (a permutation test with nperm permutation runs to estimate the p-value).
-Furthermore, a bootstrap test with nboot runs can be applied to estimate a p-value for the measure of asymmetry a.
+Furthermore, a (heuristic) bootstrap test with nboot runs can be applied to estimate a p-value for the measure of asymmetry a.
 }
 \examples{
 #Example 1 (independence)
@@ -107,7 +107,7 @@ qad(sample)
 n <- 100
 x <- runif(n,0,1)
 y <- (2*x) \%\% 1
-qad(x, y, p.value_asymmetry = TRUE)
+qad(x, y)
 }
 \references{
 Trutschnig, W. (2011). On a strong metric on the space of copulas and its induced dependence measure, Journal of Mathematical Analysis and Applications 384, 690-705.

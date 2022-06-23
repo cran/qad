@@ -58,7 +58,7 @@ plot.qad <- function(x,
                      color = "plasma",
                      rb_values = c(10, 0.315, 0.15), ...){
   qad_output <- x
-  if(class(qad_output)=='qad'){
+  if(inherits(qad_output, 'qad')){
     #Mass matrix of the copula
     mass_matrix <- qad_output$mass_matrix
     if(density){
@@ -237,11 +237,13 @@ plot_density <- function(mass_matrix, density=TRUE, color = "plasma", rb_values 
 #' @param select a character indicating which dependence value is plotted.
 #' Options are c("dependence", "max.dependence", "asymmetry").
 #' @param fontsize a numeric specifying the font size of the values.
-#' @param significance a logical indicating whether significant values - with respect to the qad p.values - are denoted by a star.
+#' @param significance a logical indicating whether significant values with respect to the (adjusted) qad p.values are denoted by a star.
+#' @param use_p.adjust a logical indicating if the adjusted p.values are used (default = TRUE).
 #' @param sign.level numeric value indicating the significance level.
-#' @param scale character indicating whether the heatmap uses a relative or absolute scale. Options are "rel" or "abs" (default).
-#' @param color Select the color palette. Options are c("plasma" (default), "viridis", "inferno", "magma", "cividis").
-#' @param rb_values a vector of size 3 with number of values, start value and end value in the rainbow colors space.
+#' @param scale character indicating whether the heatmap uses a relative or absolute scale. Options are 'rel' or 'abs' (default).
+#' @param color Select the color palette. Options are c("plasma" (default), "viridis", "inferno", "magma", "cividis", "rainbow").
+#' @param white_font numeric between 0 and 1 denoting the start value for white text font (default = 0.7)
+#' @param rb_values a vector of size 3 with number of values, start value and end value in the rainbow colors space (if color = 'rainbow').
 #' @param title The text for the title
 #' @details If the output of \code{pairwise.qad}() contains p-values, significant values can be highlighted by stars by setting significance=TRUE.
 #'
@@ -257,9 +259,15 @@ plot_density <- function(mass_matrix, density=TRUE, color = "plasma", rb_values 
 #' model <- pairwise.qad(sample_df, p.value = FALSE)
 #' heatmap.qad(model, select = "dependence", fontsize = 6)
 
-heatmap.qad <- function(pw_qad, select = c('dependence','max.dependence','asymmetry'),
-                        fontsize = 4, significance = FALSE,
-                        sign.level = 0.05, scale = "abs", color = "plasma",
+heatmap.qad <- function(pw_qad,
+                        select = c('dependence','max.dependence','asymmetry'),
+                        fontsize = 4,
+                        significance = FALSE,
+                        use_p.adjust = TRUE,
+                        sign.level = 0.05,
+                        scale = "abs",
+                        color = "plasma",
+                        white_font = 0.7,
                         rb_values = c(10, 0.315, 0.15),
                         title = ""){
 
@@ -267,8 +275,9 @@ heatmap.qad <- function(pw_qad, select = c('dependence','max.dependence','asymme
     df_matr <- as.data.frame(as.table(round(as.matrix(matr), n_round)))
     names(df_matr) <- c("Var1", "Var2", "value")
 
-    df_p <- as.data.frame(as.table(round(as.matrix(matr.p), n_round)))
+    df_p <- as.data.frame(as.table(as.matrix(matr.p)))
     names(df_p) <- c("Var1", "Var2", "p.value")
+
     df_p$sign <- with(df_p, ifelse(p.value < sign.level & !is.na(p.value), "*", ""))
     df_matr <- dplyr::left_join(df_matr, df_p, by = c("Var1", "Var2"))
     df_matr$sign_label <- with(df_matr, ifelse(is.na(value), NA, paste0(value,sign)))
@@ -286,15 +295,27 @@ heatmap.qad <- function(pw_qad, select = c('dependence','max.dependence','asymme
 
   #Select dependence measure
   if(select == 'dependence'){
-    df_long <- prepare_data_long(pw_qad$q, pw_qad$q_p.values)
+    if(use_p.adjust){
+      df_long <- prepare_data_long(pw_qad$q, pw_qad$q_p.values.adjusted)
+    }else{
+      df_long <- prepare_data_long(pw_qad$q, pw_qad$q_p.values)
+    }
     legend_title <- "Dependence: \nq:=q(x,y)"
 
   }else if(select == 'max.dependence'){
-    df_long <- prepare_data_long(pw_qad$max.dependence, pw_qad$max.dependence_p.values)
+    if(use_p.adjust){
+      df_long <- prepare_data_long(pw_qad$max.dependence, pw_qad$max.dependence_p.values.adjusted)
+    }else{
+      df_long <- prepare_data_long(pw_qad$max.dependence, pw_qad$max.dependence_p.values)
+    }
     legend_title <- "Max dependence:=\nmax(q(x,y)+q(y,x))"
 
   }else if(select == 'asymmetry'){
-    df_long <- prepare_data_long(pw_qad$asymmetry, pw_qad$asymmetry_p.values)
+    if(use_p.adjust){
+      df_long <- prepare_data_long(pw_qad$asymmetry, pw_qad$asymmetry_p.values.adjusted)
+    }else{
+      df_long <- prepare_data_long(pw_qad$asymmetry, pw_qad$asymmetry_p.values)
+    }
     limit_plot <- c(-1,1)
     legend_title <- "Asymmetry: \na:=q(x,y)-q(y,x)"
     if(color == "rainbow"){
@@ -305,6 +326,10 @@ heatmap.qad <- function(pw_qad, select = c('dependence','max.dependence','asymme
   }else{
     stop('Select an appropriate select variable. Options are c("dependence","max.dependence","asymmetry")')
   }
+
+  df_long$text_color <- ifelse(df_long$value > white_font, "high", "low")
+
+
 
   #Plot heatmap
   p <- ggplot(data = df_long, aes_(x = ~Var2, y = ~Var1, fill = ~value))
@@ -320,15 +345,30 @@ heatmap.qad <- function(pw_qad, select = c('dependence','max.dependence','asymme
   p <- p + theme_bw() + coord_fixed() + xlab('Variable 2 (Y)') + ylab("Variable 1 (X)")
 
   if(significance){
-    p <- p + geom_text(aes_(label = ~sign_label), color = "black", size = fontsize, na.rm=TRUE)
+    p <- p + geom_text(aes_(label = ~sign_label, color = ~text_color), size = fontsize, na.rm=TRUE)
   }else{
-    p <- p + geom_text(aes_(label = ~value), color = "black", size = fontsize, na.rm = TRUE)
+    p <- p + geom_text(aes_(label = ~value, color = ~text_color), size = fontsize, na.rm = TRUE)
   }
+  p <- p + scale_color_manual(values = c("high" = "white", "low" = "black")) + guides(color = "none")
+
   p <- p + theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
   p <- p + scale_y_discrete(limits = rev(levels(df_long$Var1)))
+  if(significance){
+    if(all(is.na(df_long$p.value))){
+      warning(paste0("No p.values available"))
+    }else{
+      if(use_p.adjust){
+        p <- p + labs(caption = paste0("Signif. codes:"," '*' ","p.value <", sign.level, " (p.value correction method: ", pw_qad$p.adjust.method, ")"))
+        message(paste0("p.values are adjusted by using the method ", pw_qad$p.adjust.method))
+      }else{
+        p <- p + labs(caption = paste0("Signif. codes:"," '*' ","p.value <", sign.level))
+      }
+    }
+  }
   p <- p + ggtitle(title)
   return(p)
 }
+
 
 
 

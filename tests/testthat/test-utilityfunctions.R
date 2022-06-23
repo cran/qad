@@ -1,4 +1,4 @@
-context("Utility functions")
+#context("Utility functions")
 
 n <- 100
 x <- runif(n)

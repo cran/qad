@@ -300,13 +300,13 @@ Y <- sin(X) + rnorm(n, 0, 0.1)
 plot(X,Y, pch = 16)
 
 #Compute the dependence measure q_n (and the additional p-values obtained by testing for q=0 and a=0)
-fit <- qad(X,Y, p.value = T, p.value_asymmetry = T)
+fit <- qad(X,Y, p.value = T)
 ```
 
 According to $q(x_1,x_2) > q(x_2,x_1)$ (in the notation from before meaning that $q_n(X,Y)>q_n(Y,X)$) the qad estimator informs us that $X$ 
 provides more information about $Y$ than vice versa. The qad function additionally calculates the maximum dependence, i.e., $\max\{q(x_1,x_2),q(x_2,x_1)\}$, 
 as well as the asymmetry value $a=q(x_1,x_2)-q(x_2,x_1)$. 
-Moreover, the output of qad provides p.values obtained by testing for independence and for symmetry in dependence via resampling methods (both hypotheses are rejected at the standard 
+Moreover, the output of qad provides p.values obtained by testing for independence via resampling methods (hypotheses are rejected at the standard 
 significance level).   
 
 ### Example 2 (Independence):

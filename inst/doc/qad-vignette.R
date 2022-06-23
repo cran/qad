@@ -182,7 +182,7 @@ Y <- sin(X) + rnorm(n, 0, 0.1)
 plot(X,Y, pch = 16)
 
 #Compute the dependence measure q_n (and the additional p-values obtained by testing for q=0 and a=0)
-fit <- qad(X,Y, p.value = T, p.value_asymmetry = T)
+fit <- qad(X,Y, p.value = T)
 
 ## ----example2, echo = TRUE, fig.width=8, fig.height=6, fig.align="center"-----
 set.seed(1)

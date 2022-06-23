@@ -1,4 +1,4 @@
-context("Empirical checkerboard copula")
+#context("Empirical checkerboard copula")
 
 test_that("ECBC returns a matrix of correct dimension", {
   x <- runif(10)

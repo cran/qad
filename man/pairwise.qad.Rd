@@ -10,6 +10,7 @@ pairwise.qad(
   min.res = 3,
   p.value = TRUE,
   nperm = 1000,
+  p.adjust.method = "fdr",
   p.value_asymmetry = FALSE,
   nboot = 1000
 )
@@ -25,12 +26,14 @@ pairwise.qad(
 
 \item{nperm}{an integer indicating the number of permutation runs.}
 
+\item{p.adjust.method}{a character string denoting the p.value correction method (see function p.adjust in stats). Options are c('holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr' (default), 'none')}
+
 \item{p.value_asymmetry}{a logical indicating whether a p-value (based on bootstrap) is computed for the measure of asymmetry.}
 
 \item{nboot}{an integer indicating the number of bootstrapping runs.}
 }
 \value{
-a list, containing 8 data.frames with the dependence measures, corresponding p.values, the resolution of the checkerboard aggregation and the number of removed double zero entries (only if remove.00 = TRUE).
+a list, containing data.frames with the dependence measures, corresponding p.values, the resolution of the checkerboard aggregation and the number of removed double zero entries (only if remove.00 = TRUE).
 The output of pairwise.qad() can be illustrated using the function \code{heatmap.qad()}.
 }
 \description{
@@ -44,6 +47,6 @@ x3 <- runif(n, 0, 1)
 x4 <- x3 - x2 + rnorm(n, 0, 0.1)
 sample_df <- data.frame(x1,x2,x3,x4)
 #Fit qad
-model <- pairwise.qad(sample_df, p.value = FALSE)
+model <- pairwise.qad(sample_df, p.value = TRUE, p.adjust.method = "fdr")
 heatmap.qad(model, select = "dependence", fontsize = 6)
 }

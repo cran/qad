@@ -1,4 +1,4 @@
-context("Prediction function of qad")
+#context("Prediction function of qad")
 
 test_that("predictions sum to one", {
   n <- 8

@@ -129,7 +129,8 @@ emp_c_copula <- function(X, smoothing = TRUE, resolution) {
 
 emp_c_copula_eval <- function(X, u, smoothing = TRUE, resolution){
   .Deprecated("ECBC.eval")
-  if(class(u) == 'data.frame'){
+
+  if(inherits(u, 'data.frame')){
     mass <- emp_c_copula(X, smoothing = smoothing, resolution)
     N <- NROW(mass)
     u <- data.frame(u)

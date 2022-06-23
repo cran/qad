@@ -25,22 +25,23 @@
 
 \item{nr_intervals}{an integer, which determines a different number of intervals for the prediction (only possible in the copula setting).}
 
-\item{prediction_interval}{a vector specifying the interval boundaries for which the conditional probability is computed. Options are NULL (default) to predict the conditional probabilites for all intervals or a vector c(lower_boundary, upper_boundary) indicating the boundaries.}
+\item{prediction_interval}{a vector specifying the interval boundaries for which the conditional probability is computed. Options are NULL (default) to predict the conditional probabilities for all intervals or a vector c(lower boundary, upper boundary) indicating the boundaries.}
 
-\item{copula}{a logical (default =FALSE) determining whether the empirical checkerboard copula is used or the retransformed data.}
+\item{copula}{a logical (default = FALSE) determining whether the empirical checkerboard copula is used or the retransformed data.}
 
-\item{pred_plot}{a logical indicating if the conditional probabilites are plotted.}
+\item{pred_plot}{a logical indicating if the conditional probabilities are plotted.}
 
 \item{panel.grid}{a logical indicating whether the panel.grid is plotted.}
 
 \item{...}{some methods for this generic require additional arguments.  None are used in this method.}
 }
 \value{
-a list containing a data.frame with the interval boundaries and the prediction probabilities and a plot depicting the mass of the conditional distributions functions.
+a list containing a data.frame with the computed intervals (lower and upper boundaries) and the prediction probabilities (i.e., the probability that Y lies in the interval Ii given X = x).
+Furthermore, a heatmap depicting the mass of the conditional distribution functions is returned.
 }
 \description{
 The function \code{predict.qad()} can be utilized to predict the probabilities of the event that Y lies in
-specific intervals given X=x, or vice versa. Additionally, the mass of the conditional distribution functions are plotted.
+specific intervals given X=x, or vice versa. Thereby, the intervals are calculated as retransformed intervals (by using the empirical quantil function) defining the checkerboard grid. Additionally, the mass of the conditional distribution functions are plotted.
 The prediction can be computed in the sample setting as well as in the copula setting (pseudo-observation in the unit square).
 }
 \note{

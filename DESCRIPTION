@@ -1,7 +1,7 @@
 Package: qad
 Type: Package
 Title: Quantification of Asymmetric Dependence
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: 
     c(person(given = "Florian", 
              family = "Griessenberger", 
@@ -30,12 +30,13 @@ LinkingTo: Rcpp
 Suggests: rmarkdown, reshape2, knitr, testthat (>= 3.0.0)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
+LazyData: true
 NeedsCompilation: yes
-Packaged: 2021-12-02 13:41:22 UTC; Florian
+Packaged: 2022-06-23 15:10:36 UTC; Florian
 Author: Florian Griessenberger [aut, cre],
   Robert R. Junker [aut],
   Valentin Petzel [aut],
   Wolfgang Trutschnig [aut]
 Maintainer: Florian Griessenberger <florian.griessenberger@sbg.ac.at>
 Repository: CRAN
-Date/Publication: 2021-12-02 14:30:02 UTC
+Date/Publication: 2022-06-23 15:30:02 UTC
