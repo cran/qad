@@ -2,12 +2,13 @@ bibentry(
   header  = "To cite 'qad' in publications use:",
   bibtype = "Manual",
   title   = "qad: Quantification of Asymmetric Dependence",
-  author  = c(person("Florian", "Griessenberger"),
+  author  = c(person("Thimo", "Kasper"),
+              person("Florian", "Griessenberger"),
               person("Robert R.", "Junker"),
               person("Valentin", "Petzel"),
               person("Wolfgang", "Trutschnig")),
-  year    = "2021",
-  note    = "R package version 1.0.0",
+  year    = "2022",
+  note    = "R package version 1.0.3",
   url     = "https://CRAN.R-project.org/package=qad"
 )
 

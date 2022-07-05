@@ -1,4 +1,4 @@
-a8610a8928d100d4e527e5e6019b7670 *DESCRIPTION
+315fa6e033a728b7df2c5119dd8df3e6 *DESCRIPTION
 70b5b62795a1d0a7785aa654f94d8255 *NAMESPACE
 b844c7e889299d388bd38909a8aa8d32 *NEWS.md
 0b65af1f369f5c778f4d90762fcea5ca *R/D1.R
@@ -12,10 +12,10 @@ cc23e67871113708328e0ef3e60834a9 *R/data.R
 9bea56ab1ae574498d9195306e40ee4c *R/qad.R
 ac13378b35bc990e3dcd499fd31fc41a *R/utility_functions.R
 85a40cba2eb5e8ba57d4025a53152660 *README.md
-ed2566986d072d5cab44d9c4e3014d77 *build/partial.rdb
+bd0c59c32e9fb5bee7d6056a65acbfdd *build/partial.rdb
 3dda5cf64c274c32b85d7a5f695ff863 *build/vignette.rds
 f45bb4365f7241fe05e6d14bb1781c54 *data/PlantDiversity.rda
-44745cfec3a47cb3f2c13ff1988e3181 *inst/CITATION
+d00adfcb8375e1d42ae015aa2ed83cc6 *inst/CITATION
 65dfa3f19eb3bf1d9af160e6540cd0b8 *inst/doc/qad-vignette.R
 547bba71121f110ab8037bc6462546a2 *inst/doc/qad-vignette.Rmd
 2701edc56e187c96d5e6b3a7fb70718a *inst/doc/qad-vignette.html
