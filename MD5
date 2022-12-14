@@ -1,4 +1,4 @@
-315fa6e033a728b7df2c5119dd8df3e6 *DESCRIPTION
+5c31a1197815d97809677dd397042b23 *DESCRIPTION
 70b5b62795a1d0a7785aa654f94d8255 *NAMESPACE
 b844c7e889299d388bd38909a8aa8d32 *NEWS.md
 0b65af1f369f5c778f4d90762fcea5ca *R/D1.R
@@ -12,13 +12,13 @@ cc23e67871113708328e0ef3e60834a9 *R/data.R
 9bea56ab1ae574498d9195306e40ee4c *R/qad.R
 ac13378b35bc990e3dcd499fd31fc41a *R/utility_functions.R
 85a40cba2eb5e8ba57d4025a53152660 *README.md
-bd0c59c32e9fb5bee7d6056a65acbfdd *build/partial.rdb
-3dda5cf64c274c32b85d7a5f695ff863 *build/vignette.rds
+cb4924f3573383fca290a0a8e2ca5294 *build/partial.rdb
+b8c30da8af988e7496f9f4e147597335 *build/vignette.rds
 f45bb4365f7241fe05e6d14bb1781c54 *data/PlantDiversity.rda
 d00adfcb8375e1d42ae015aa2ed83cc6 *inst/CITATION
 65dfa3f19eb3bf1d9af160e6540cd0b8 *inst/doc/qad-vignette.R
 547bba71121f110ab8037bc6462546a2 *inst/doc/qad-vignette.Rmd
-2701edc56e187c96d5e6b3a7fb70718a *inst/doc/qad-vignette.html
+a22441903358eeab76db7fa32ac56188 *inst/doc/qad-vignette.html
 15e6233b62d1d7830277eca9b810d9ae *man/D1.Rd
 7d9eb9685facf36792f3a6fecb989ae0 *man/ECBC.Rd
 d664a05a4be8037bd2d187ffc3243e9d *man/PlantDiversity.Rd
@@ -51,7 +51,7 @@ e05849e40a8f04fb41b3b093706d3e9d *vignettes/man/figures/README-plot1-1.png
 2586d25918d7a27c34b79b2cca81a460 *vignettes/man/figures/README-plotforecast-1.pdf
 0351a4e878a6aa94ba05e4877fe30241 *vignettes/man/figures/README-plotforecast-1.png
 38ee1f8a8f1dff6bb02d55c477dd6a5f *vignettes/man/figures/README-plotforecast-2.pdf
-224b92a624adee15d51f60ceadd1ac48 *vignettes/man/figures/README-plotforecast-2.png
+f2d888eb854405965d9c30a855397c61 *vignettes/man/figures/README-plotforecast-2.png
 72aa73de57c1310229b3ce7712503a27 *vignettes/man/figures/README-unnamed-chunk-13-1.pdf
 795cc91ab723ce3037345deba800d8ea *vignettes/man/figures/README-unnamed-chunk-13-1.png
 5d9f749c2ba84f7acba9839c261a74e4 *vignettes/man/figures/README-unnamed-chunk-14-1.png
