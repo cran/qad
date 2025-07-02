@@ -114,4 +114,4 @@ cor(x,y, method = "kendall")
 -   \[3\] W. Trutschnig: On a strong metric on the space of copulas and
     its induced dependence measure, *Journal of Mathematical Analysis
     and Applications*, 2011, (384), 690-705.
-    <a href="https://www.sciencedirect.com/science/article/pii/S0022247X11005610">https://doi.org/10.1016/j.jmaa.2011.06.013</a>
+    <a href="https://doi.org/10.1016/j.jmaa.2011.06.013">https://doi.org/10.1016/j.jmaa.2011.06.013</a>

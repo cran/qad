@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -11,20 +11,20 @@ library(qad)
 
 
 ## ----eval = FALSE, echo = TRUE, class.source = "fold-hide"--------------------
-#  R <- 100000
-#  X <- sample(1:6, R, replace = T)
-#  Y <- sample(1:6, R, replace = T)
-#  
-#  #Probability that Y = 1
-#  mean(ifelse(Y == 1, 1, 0))
-#  
-#  #Probability that Y = 1 if we know X
-#  probs <- rep(0,6)
-#  for(i in 1:6){
-#    probs[i] <- sum(ifelse(Y == 1 & X == i, 1, 0))/sum(X == i)
-#  }
-#  #Probability that Y = 1 if we know the value of X
-#  probs
+# R <- 100000
+# X <- sample(1:6, R, replace = T)
+# Y <- sample(1:6, R, replace = T)
+# 
+# #Probability that Y = 1
+# mean(ifelse(Y == 1, 1, 0))
+# 
+# #Probability that Y = 1 if we know X
+# probs <- rep(0,6)
+# for(i in 1:6){
+#   probs[i] <- sum(ifelse(Y == 1 & X == i, 1, 0))/sum(X == i)
+# }
+# #Probability that Y = 1 if we know the value of X
+# probs
 
 ## ----plot1, echo=F, out.width = "70%", fig.align='center', fig.width=6, fig.height=4.5, fig.cap = "Sample of size n=40 drawn from the model $Y=X^2+\\varepsilon$."----
 set.seed(5)
@@ -37,10 +37,10 @@ f_col <- "grey70"
 f <- function(x) return(x^2)
 p <- ggplot()
 p <- p + geom_point(data = df, aes(x = X, y = Y))
-p <- p + geom_function(fun = f, color = "blue", alpha = 0.4, size = 1.2, n = 2000, xlim = c(-1,1))
-p <- p + geom_path(aes(x=c(-3/4,-3/4,-1.1), y= c(-0.1, f(-3/4), f(-3/4))), color = f_col, size = 1.1, 
+p <- p + geom_function(fun = f, color = "blue", alpha = 0.4, linewidth = 1.2, n = 2000, xlim = c(-1,1))
+p <- p + geom_path(aes(x=c(-3/4,-3/4,-1.1), y= c(-0.1, f(-3/4), f(-3/4))), color = f_col, linewidth = 1.1, 
                    arrow = arrow(length = unit(0.1, "inches"), ends = "both"))
-p <- p + geom_path(aes(x=c(3/4,3/4,-1.1), y= c(-0.1,f(3/4),  f(3/4))), color = f_col, size = 1.1, 
+p <- p + geom_path(aes(x=c(3/4,3/4,-1.1), y= c(-0.1,f(3/4),  f(3/4))), color = f_col, linewidth = 1.1, 
                    arrow = arrow(length = unit(0.1, "inches"), ends = "both"))
 p <- p + theme_bw() + theme(plot.title = element_text(hjust = 0.5))
 p <- p + scale_x_continuous(expand = c(0,0)) + scale_y_continuous(expand = c(0,0))
@@ -88,9 +88,9 @@ mydistributionplot <- function(fit){
   df$max <- pmax(df$value, df$x)
 
   p <- ggplot()
-  p <- p + geom_line(data = df0, aes(x = x, y = value, color = Kernel), size = 1.03)
-  p <- p + geom_line(data = df0, aes(x = x, y = x), size = 1.05, linetype = "dashed")
-  p <- p + geom_line(data = subset(df0, df0$Kernel == "Strip 1"), aes(x = x, y = value), color = 'magenta', size = 1.05)
+  p <- p + geom_line(data = df0, aes(x = x, y = value, color = Kernel), linewidth = 1.03)
+  p <- p + geom_line(data = df0, aes(x = x, y = x), linewidth = 1.05, linetype = "dashed")
+  p <- p + geom_line(data = subset(df0, df0$Kernel == "Strip 1"), aes(x = x, y = value), color = 'magenta', linewidth = 1.05)
 
   p <- p + geom_ribbon(data = subset(df, df$Kernel == "Strip 1"), aes(x = x, ymin = min, ymax = max),fill = "magenta", alpha = 0.3)
   p <- p + scale_x_continuous(breaks = function(x) pretty(x, 8))
@@ -148,27 +148,27 @@ p6 <- mydistributionplot(fit2) +
   theme(legend.position = "bottom", axis.title.x = element_blank())
 
 
-## ---- fig.width=8, fig.height=7, fig.cap="Sample of size n=40", fig.align="center"----
+## ----fig.width=8, fig.height=7, fig.cap="Sample of size n=40", fig.align="center"----
 p1
 
-## ---- fig.width=8, fig.height=7, fig.cap="Empirical copula and normalized ranks (points); notice that the masses are uniform over the squares and that,  by construction of the empirical copula, the upper right corner of the squares are the normalized ranks", fig.align="center"----
+## ----fig.width=8, fig.height=7, fig.cap="Empirical copula and normalized ranks (points); notice that the masses are uniform over the squares and that,  by construction of the empirical copula, the upper right corner of the squares are the normalized ranks", fig.align="center"----
 p2
 
-## ---- fig.width=8, fig.height=7, fig.cap="Empirical copula (left panel) and checkerboard aggregation with resolution $N=6$ (right panel)", fig.align="center"----
+## ----fig.width=8, fig.height=7, fig.cap="Empirical copula (left panel) and checkerboard aggregation with resolution $N=6$ (right panel)", fig.align="center"----
 p3
 p4
 
-## ---- fig.width=8, fig.height=7, fig.cap="Distance between the conditional distriubtion functions of the checkerboard copula and the product copula, representing independence, for vertical strips (left panel) and horizontal strips (right panel)."----
+## ----fig.width=8, fig.height=7, fig.cap="Distance between the conditional distriubtion functions of the checkerboard copula and the product copula, representing independence, for vertical strips (left panel) and horizontal strips (right panel)."----
 p5
 p6
 
 ## ----eval = F, echo = T-------------------------------------------------------
-#  install.packages("qad")
-#  library(qad)
+# install.packages("qad")
+# library(qad)
 
 ## ----echo = T, eval = F-------------------------------------------------------
-#  help("qad")
-#  help("qad-package")
+# help("qad")
+# help("qad-package")
 
 ## ----example1, echo = TRUE, fig.width=8, fig.height=6, fig.align="center"-----
 set.seed(1)
@@ -204,7 +204,7 @@ x <- runif(4)
 y <- runif(4)
 qad(x,y)
 
-## ---- echo=T, eval=T, results="hide"------------------------------------------
+## ----echo=T, eval=T, results="hide"-------------------------------------------
 #Generate sample
 set.seed(1)
 n <- 250
@@ -223,7 +223,7 @@ pred$prediction
 pp <- pred$plot + theme_classic() + theme(plot.title = element_blank(), legend.position = c(0.9,0.5))
 #pp
 
-## ---- echo=F, eval=T, results="hold"------------------------------------------
+## ----echo=F, eval=T, results="hold"-------------------------------------------
 #Generate sample
 pred$prediction
 

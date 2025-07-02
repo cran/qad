@@ -17,17 +17,18 @@
 #' @details If the observations are drawn from a continuous distribution (no ties in the sample),
 #' the function \code{ECBC()} returns the commonly used empirical checkerboard copula.
 #' If there are ties in the sample, the empirical copula is adjusted and calculated in the following way: \cr
-#' Let (u_i,v_i) := (F_n(x_i),G_n(y_i)) be the pseudo-observations for i in \{1,\ldots,n\} and (u_1',v_1'),\ldots, (u_m',v_m') the distinct pairs of pseudo-observations with m leq n. Moreover set S_1:=\{0, u_1, \ldots, u_{m_1}\} and S_2:=\{0, v_1,\ldots, v_{m_2}\} and define the quantities t_i,r_i and s_i for i=1,\ldots, m by
-#' \deqn{t_i := sum_{j=1}^n 1_{(u_i',v_i')}(u_j,v_j)}
-#' \deqn{r_i := sum_{j=1}^n 1_{u_i}(u_j)}
-#' \deqn{s_i := sum_{j=1}^n 1_{v_i}(v_j)}
+#' Let \eqn{(u_i,v_i) := (F_n(x_i),G_n(y_i))} be the pseudo-observations for \eqn{i \in \{1,\ldots,n\}} and \eqn{(u_1',v_1'),\ldots, (u_m',v_m')} the distinct pairs of pseudo-observations with m leq n. Moreover set \eqn{S_1:=\{0, u_1, \ldots, u_{m_1}\}} and \eqn{S_2:=\{0, v_1,\ldots, v_{m_2}\}} and define the quantities \eqn{t_i,r_i} and
+#' \eqn{s_i} for \eqn{i=1,\ldots, m} by
+#' \deqn{t_i := \sum_{j=1}^n 1_{(u_i',v_i')}(u_j,v_j)}
+#' \deqn{r_i := \sum_{j=1}^n 1_{u_i}(u_j)}
+#' \deqn{s_i := \sum_{j=1}^n 1_{v_i}(v_j)}
 #' where 1 defines the indicator function.
-#' Define the empirical subcopula A'_n: S_1 x S_2 to \{0,1/n, \ldots, (n-1)/n,1\} by
-#' \deqn{A'_n(s_1,s_2)= 1/n  sum_{i=1}^m t_i * 1_{[0,s_1] x [0,s_2]} (u_i', v_i')=1/n sum_{i=1}^n 1_{[0,s_1] x [0,s_2]} (u_i, v_i)}
-#' for all s_1 in S_1 and s_2 in S_2. \cr
-#' We extend the subcopula A'_n to a copula by defining the transformations w_i:[0,1]^2 to [u_i'-r_i/n,u_i'] x [v_i'-s_i/n,v_i'] by
+#' Define the empirical subcopula \eqn{A'_n: S_1 x S_2 \to \{0,1/n, \ldots, (n-1)/n,1\}} by
+#' \deqn{A'_n(s_1,s_2)= 1/n  \sum_{i=1}^m t_i * 1_{[0,s_1] x [0,s_2]} (u_i', v_i')=1/n \sum_{i=1}^n 1_{[0,s_1] x [0,s_2]} (u_i, v_i)}
+#' for all \eqn{s_1 \in S_1} and \eqn{s_2 in S_2}. \cr
+#' We extend the subcopula \eqn{A'_n} to a copula by defining the transformations \eqn{w_i:[0,1]^2 \to [u_i'-r_i/n,u_i'] x [v_i'-s_i/n,v_i']} by
 #' \deqn{w_i(x,y)=(u_i'-r_i/n+r_i*x/n, v_i'-s_i/n + s_iy/n)}
-#' and set the measure of the empirical copula mu_{A_n}^B := 1/n sum_{i=1}^m t_i mu_B^{w_i}, where B denotes the product copula.
+#' and set the measure of the empirical copula \eqn{mu_{A_n}^B := 1/n \sum_{i=1}^m t_i mu_B^{w_i}}, where B denotes the product copula.
 #'
 #'
 #' @references
