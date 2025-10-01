@@ -1,7 +1,7 @@
 Package: qad
 Type: Package
 Title: Quantification of Asymmetric Dependence
-Version: 1.0.5
+Version: 1.0.6
 Authors@R: c(person(given = "Thimo", family = "Kasper", role = "aut", email = "thimo.kasper@plus.ac.at"),
              person(given = "Florian", family = "Griessenberger", role = "aut", email = "florian.griessenberger@plus.ac.at"),
              person(given = c("Robert", "R."), family = "Junker", role = "aut"),
@@ -24,10 +24,10 @@ Config/testthat/edition: 3
 VignetteBuilder: knitr
 LazyData: true
 NeedsCompilation: yes
-Packaged: 2025-07-01 13:43:28 UTC; b1082470
+Packaged: 2025-10-01 15:01:05 UTC; b1082470
 Maintainer: Lea Maislinger <lea.maislinger@plus.ac.at>
 Repository: CRAN
-Date/Publication: 2025-07-02 08:40:02 UTC
+Date/Publication: 2025-10-01 15:30:02 UTC
 Author: Thimo Kasper [aut],
   Florian Griessenberger [aut],
   Robert R. Junker [aut],

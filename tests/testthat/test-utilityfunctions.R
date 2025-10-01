@@ -12,27 +12,25 @@ test_that("coef.qad", {
 
 
 test_that("summary.qad", {
-  test <- summary(fit)
-  expect_equal(test$SampleSize, n)
-  expect_equal(test$resolution, 10)
-  expect_equal(test$dependence_values, fit$results)
+  test <- summary(fit) 
+  expect_equal(test$SampleSize, n) 
+  expect_equal(test$resolution, 10) 
+  expect_equal(test$dependence_values, fit$results) 
   expect_output(summary(fit))
 })
 
-
 test_that("plot.qad", {
-  expect_equal(class(plot(fit)), c("gg", "ggplot"))
-  expect_equal(class(plot(fit, addSample = TRUE)), c("gg", "ggplot"))
-  expect_equal(class(plot(fit, copula = TRUE)), c("gg", "ggplot"))
-  expect_equal(class(plot(fit, density = TRUE)), c("gg", "ggplot"))
-  expect_equal(class(plot(fit, margins = TRUE)), c("gg", "ggplot"))
-  expect_equal(class(plot(fit, panel.grid = FALSE)), c("gg", "ggplot"))
+  expect_equal(class(plot(fit)), c("ggplot2::ggplot","ggplot","ggplot2::gg","S7_object","gg" )) 
+  expect_equal(class(plot(fit, addSample = TRUE)), c("ggplot2::ggplot","ggplot","ggplot2::gg","S7_object","gg" ))
+  expect_equal(class(plot(fit, copula = TRUE)), c("ggplot2::ggplot","ggplot","ggplot2::gg","S7_object","gg" ))
+  expect_equal(class(plot(fit, density = TRUE)), c("ggplot2::ggplot","ggplot","ggplot2::gg","S7_object","gg" ))
+  expect_equal(class(plot(fit, margins = TRUE)), c("ggplot2::ggplot","ggplot","ggplot2::gg","S7_object","gg" ))
+  expect_equal(class(plot(fit, panel.grid = FALSE)), c("ggplot2::ggplot","ggplot","ggplot2::gg","S7_object","gg" ))
 })
 
 test_that("plot_density", {
-  expect_equal(class(plot_density(fit$mass_matrix)), c("gg", "ggplot"))
+  expect_equal(class(plot_density(fit$mass_matrix)), c("ggplot2::ggplot","ggplot","ggplot2::gg","S7_object","gg" )) 
 })
-
 
 
 test_that("pqad", {

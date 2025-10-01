@@ -6,7 +6,7 @@ test_that("predictions sum to one", {
   y <- x^2
   sample <- data.frame(x, y)
   qad.fit <- qad::qad(sample, print = FALSE, resolution = 4)
-  pred <-qad:: predict.qad(qad.fit, values = c(1, 3, 5, 7), conditioned = "x1", pred_plot = FALSE)
+  pred <- qad:: predict.qad(qad.fit, values = c(1, 3, 5, 7), conditioned = "x1", pred_plot = FALSE)
   expect_equal(pred$prediction$`x1=1`, c(1,0,0,0))
   expect_equal(pred$prediction$`x1=3`, c(0,1,0,0))
   expect_equal(pred$prediction$`x1=5`, c(0,0,1,0))
@@ -39,5 +39,5 @@ test_that("plot is returned by prediction", {
   y <- rnorm(n)
   fit <- qad::qad(x,y, print = FALSE, resolution = 11)
   pred <- qad::predict.qad(fit, values = c(0), conditioned = "x1", pred_plot = FALSE)
-  expect_equal(class(pred[[2]]), c("gg", "ggplot"))
+  expect_equal(class(pred[[2]]), c("ggplot2::ggplot","ggplot","ggplot2::gg","S7_object","gg" ))
 })

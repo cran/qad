@@ -76,9 +76,10 @@ test_that("pairwise qad", {
 })
 
 test_that("heatmap.qad", {
-  expect_equal(class(qad::heatmap.qad(pw_fit, select = "dependence")), c("gg", "ggplot"))
+  expect_equal(class(qad::heatmap.qad(pw_fit, select = "dependence")), c("ggplot2::ggplot","ggplot","ggplot2::gg","S7_object","gg" ))
   expect_equal(class(qad::heatmap.qad(pw_fit, select = "dependence",
-                                      fontsize = 5, significance = T, scale = "rel", color = "viridis", title = "test")), c("gg", "ggplot"))
+                                      fontsize = 5, significance = T, scale = "rel", color = "viridis", title = "test")), 
+               c("ggplot2::ggplot","ggplot","ggplot2::gg","S7_object","gg" ))
 })
 
 
